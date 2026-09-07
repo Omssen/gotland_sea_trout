@@ -1,52 +1,81 @@
-Name: GitHub Pages bereitstellen
+name: Deploy GitHub Pages
 
-An:
-  drücken:
-    Branches: ["main", "v6-test"]
-  Workflow-Versand:
+on:
+  push:
+    branches: ["main", "v6-test"]
 
-Berechtigungen:
-  Inhalt: lesen
-  Seiten: schreiben
-  id-token: schreiben
+  workflow_dispatch:
 
-Gleichzeitigkeit:
-  Gruppe: Seiten
-  Abbruch während des Vorgangs: wahr
+permissions:
 
-Jobs:
-  einsetzen:
-    Umfeld:
-      Name: github-pages
-      URL: ${{ steps.deployment.outputs.page_url }}
-    läuft auf: ubuntu-latest
+  contents: read
 
-    Schritte:
-      - Name: Haupt-Checkout
-        Verwendung: actions/checkout@v4
-        mit:
+  pages: write
+
+  id-token: write
+
+concurrency:
+
+  group: pages
+
+  cancel-in-progress: true
+
+jobs:
+
+  deploy:
+
+    environment:
+
+      name: github-pages
+
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout main
+
+        uses: actions/checkout@v4
+
+        with:
+
           ref: main
-          Pfad: Website
 
-      - Name: Checkout v6-Test
-        Verwendung: actions/checkout@v4
-        mit:
-          Referenz: v6-Test
-          Pfad: v6test
+          path: site
 
-      - Name: Testversion v6 hinzufügen
-        Ausführung: |
+      - name: Checkout v6-test
+
+        uses: actions/checkout@v4
+
+        with:
+
+          ref: v6-test
+
+          path: v6test
+
+      - name: Add v6 test version
+
+        run: |
+
           mkdir -p site/v6-test
+
           cp -R v6test/* site/v6-test/
 
-      - Name: Einrichtungsseiten
-        Verwendung: actions/configure-pages@v5
+      - name: Setup Pages
 
-      - Name: Upload-Seite
-        Verwendung: actions/upload-pages-artifact@v3
-        mit:
-          Pfad: Website
+        uses: actions/configure-pages@v5
 
-      - Name: Bereitstellen
-        ID: Bereitstellung
-        Verwendung: actions/deploy-pages@v4
+      - name: Upload site
+
+        uses: actions/upload-pages-artifact@v3
+
+        with:
+
+          path: site
+
+      - name: Deploy
+
+        id: deployment
+
+        uses: actions/deploy-pages@v4
