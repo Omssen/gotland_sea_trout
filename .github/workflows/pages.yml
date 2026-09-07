@@ -55,12 +55,11 @@ jobs:
           path: v6test
 
       - name: Add v6 test version
-
         run: |
-
           mkdir -p site/v6-test
-
-          cp -R v6test/* site/v6-test/
+          cp -a v6test/. site/v6-test/
+          echo "Files in v6-test:"
+          find site/v6-test -maxdepth 2 -type f -print
 
       - name: Setup Pages
 
