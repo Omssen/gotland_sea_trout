@@ -1,34 +1,52 @@
-name: Deploy GitHub Pages
+Name: GitHub Pages bereitstellen
 
-on:
-  push:
-    branches: ["main"]
-  workflow_dispatch:
+An:
+  drücken:
+    Branches: ["main", "v6-test"]
+  Workflow-Versand:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+Berechtigungen:
+  Inhalt: lesen
+  Seiten: schreiben
+  id-token: schreiben
 
-concurrency:
-  group: pages
-  cancel-in-progress: true
+Gleichzeitigkeit:
+  Gruppe: Seiten
+  Abbruch während des Vorgangs: wahr
 
-jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+Jobs:
+  einsetzen:
+    Umfeld:
+      Name: github-pages
+      URL: ${{ steps.deployment.outputs.page_url }}
+    läuft auf: ubuntu-latest
+
+    Schritte:
+      - Name: Haupt-Checkout
+        Verwendung: actions/checkout@v4
+        mit:
+          ref: main
+          Pfad: Website
+
+      - Name: Checkout v6-Test
+        Verwendung: actions/checkout@v4
+        mit:
+          Referenz: v6-Test
+          Pfad: v6test
+
+      - Name: Testversion v6 hinzufügen
+        Ausführung: |
+          mkdir -p site/v6-test
+          cp -R v6test/* site/v6-test/
+
+      - Name: Einrichtungsseiten
+        Verwendung: actions/configure-pages@v5
+
+      - Name: Upload-Seite
+        Verwendung: actions/upload-pages-artifact@v3
+        mit:
+          Pfad: Website
+
+      - Name: Bereitstellen
+        ID: Bereitstellung
+        Verwendung: actions/deploy-pages@v4
