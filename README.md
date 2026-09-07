@@ -1,26 +1,23 @@
-# Gotland Sea Trout v4
+# Gotland Sea Trout v6
 
-Installierbare PWA für die Planung des Meerforellenangelns auf Gotland.
+Neugestaltete mobile PWA mit Karte-zuerst-Bedienung.
 
-## Neu in v4
-- Tages-Dashboard (Früh / Mittag / Abend)
-- eigene Spots per Kartenklick
-- lokales Fangtagebuch mit Foto
-- Backup/Restore von eigenen Spots und Tagebuch
-- visuell hervorgehobene Warnbereiche bei Spots nahe bekannter Schutzgewässer
-- alle v3-Funktionen: Satellitenkarte, Live-Wind/Marine-Daten, 48-h-Prognose, Ranking, Küstenplaner, OSM-Parkplätze
+## Neu
+- ruhiger Startbildschirm, kein roter Schonzeit-Dauerbalken
+- One-Tap Karte ↔ Satellit
+- große Spot-Detailansicht statt Popup
+- 3 Satelliten-Zoomstufen je Spot
+- Parkplätze via OpenStreetMap/Overpass; Tap öffnet Google Maps Navigation
+- Parkplätze im sichtbaren Kartenausschnitt (ab Zoom 11)
+- eigene Spots per Karten-Tap, bearbeiten/löschen
+- Ferienhaus auf Karte speichern
+- Standort und optionale GPS-Näherungswarnung
+- Wind- und Strömungspfeilfelder
+- Wassertemperatur-Layer
+- öffentliche EMODnet-Bathymetrie
+- Backup für eigene Spots/Ferienhaus/Favoriten
 
-## Start lokal
-Im App-Ordner:
+## Wichtige Grenzen
+Die früheren geschätzten Schutzgebietskreise wurden bewusst entfernt. Die App zeichnet keine erfundenen Rechtsgrenzen. Bis offizielle nutzbare Polygon-Geometrien vorliegen, verlinkt sie die offiziellen Länsstyrelsen-Regeln und warnt nur näherungsweise anhand zugeordneter Gewässerregionen. GPS-Browserbenachrichtigungen funktionieren zuverlässig nur, solange die Web-App aktiv ist; echtes Hintergrund-Geofencing benötigt eine native App bzw. Plattformdienst.
 
-```bash
-python -m http.server 8080
-```
-
-Dann `http://localhost:8080` öffnen.
-
-## Datenschutz
-Eigene Spots und Favoriten liegen in localStorage. Fangtagebuch und Fotos liegen in IndexedDB im Browser. Es wird kein eigener Cloud-Dienst für persönliche Daten verwendet. Nutze die Backup-Funktion, bevor du Browserdaten löschst oder das Gerät wechselst.
-
-## Recht/Sicherheit
-Die Schutzgebiet-Hinweise sind keine amtlichen Flächengeometrien. Vor jedem Angeltag die aktuellen offiziellen Karten und Regeln der Länsstyrelsen Gotland prüfen. Marine-Modellwerte sind Planungshilfen, keine Navigationsdaten.
+Die öffentliche Bathymetrie ist nicht die gewünschte hochauflösende 150-m-Küstendetailkarte. Schwedische hochauflösende Tiefendaten unterliegen Einschränkungen; deshalb wird nur eine belastbare öffentliche Ebene verwendet.
