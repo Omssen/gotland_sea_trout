@@ -2,7 +2,7 @@ name: Deploy GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "v6-test"]
   workflow_dispatch:
 
 permissions:
@@ -20,15 +20,35 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          ref: main
+          path: site
+
+      - name: Checkout v6-test
+        uses: actions/checkout@v4
+        with:
+          ref: v6-test
+          path: v6test
+
+      - name: Add v6 test version
+        run: |
+          mkdir -p site/v6-test
+          cp -a v6test/. site/v6-test/
+          echo "Files in v6-test:"
+          find site/v6-test -maxdepth 2 -type f -print
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: site
+
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
