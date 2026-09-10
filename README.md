@@ -1,44 +1,25 @@
-# Gotland Sea Trout v6.1.2 – Testversion
+# Gotland Sea Trout v6.1.3 – Testversion
 
-Diese Version ist für den `v6-test`-Bereich gedacht und verändert die Hauptversion nicht.
+Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenansicht.
 
-## In dieser Testrunde neu/überarbeitet
+## Neu in v6.1.3
 
-- Spotliste: `Alle / Spots / Eigene`; voreingestellt sind beide gemeinsam.
-- Eigene Spots erscheinen mit violettem `E1`, `E2` … Marker auch in der rechten Spotliste.
-- Spot-Koordinaten werden bei Onlinebetrieb zusätzlich gegen die OSM-Meeresküstenlinie geprüft und an die nächstgelegene Küstenlinie gesetzt; Ergebnis wird lokal zwischengespeichert.
-- Satellitenansichten haben drei eigene, seewärts versetzte Mittelpunkte (Übersicht/Küste/Detail).
-- Spot-Detailfenster berücksichtigt die iPhone Safe Area und verwendet auf Mobilgeräten kompaktere Satellitenbilder.
-- Schutzgebiete werden live aus dem offiziellen Kartendienst **Svenska Fiskeregler** (Länsstyrelserna/HaV) geladen. Die Karte ist eine Orientierungshilfe; rechtlich maßgeblich bleibt die veröffentlichte Vorschrift.
-- Strömung: Versuch einer direkten Copernicus-Marine-WMTS-Anbindung an das Baltic Sea Physics Modell (SMHI, ca. 2 km Raster, 15-Minuten-Oberflächenströmung). Variable Pfeile werden ergänzend aus Open-Meteo-Werten dargestellt; Pfeilgröße = Geschwindigkeit.
-- Pfeilrichtung korrigiert und Landmaske konservativer gemacht, damit keine Pfeile mitten auf Gotland erscheinen.
-- Parkplätze bleiben auf ca. 300 m Küstenabstand gefiltert.
-- Zeitachse, Legenden, Layer-Schalter, `+ Spot`-Abbrechen, Ferienhaus und Quellen-/Lizenzansicht bleiben enthalten.
+- **Mobile Karte zuerst:** Auf dem Handy belegt die Karte fast den ganzen verfügbaren Bildschirm. Menü, Ranking und Spotliste liegen in einem einklappbaren unteren Drawer.
+- **Kompakte Legenden:** Legenden sind zunächst klein und lassen sich antippen/aufklappen.
+- **Animierter Wind:** zusammenhängendes Windstärken-Farbfeld plus feine bewegte Partikel; keine Zahlenflut und keine großen blauen Pfeile.
+- **Animierte Strömung:** Farbfeld plus feine schwarze Pfeile/Punkte und zusätzliche animierte Wasserbewegung. Die Animation ist eine Visualisierung der interpolierten Modelldaten, keine höhere Messauflösung.
+- **Wassertemperatur:** keine Einzelkreise mehr, sondern eine zusammenhängende interpolierte Farbfläche.
+- **Wassertiefe:** Legende farblich an die sichtbare EMODnet-Darstellung angenähert. Die ca. 50-m-Orientierungslinie wird vereinfacht/geglättet und erst ab Zoomstufe 13 gezeigt.
+- **Parkplätze:** robusterer OSM-Overpass-Abruf mit zweitem Server als Fallback; Parkplätze werden auch dann nicht komplett verworfen, wenn die Küstengeometrie im selben Abruf fehlt.
+- **Spots bei großem Zoom:** Standard- und eigene Spotmarker werden erst ab Zoomstufe 9 eingeblendet, um Markerhaufen bei Ostsee-Übersicht zu vermeiden.
+- **„Beste Spots jetzt“:** erste erweiterte Bewertung mit Wind zur Küste, Welle, Wassertemperatur, Strömungsstärke, Strömungsrichtung relativ zur Küste und einer einfachen Strömungskanten-Erkennung im Umfeld.
+- **Schutzflächen:** sehr großflächige allgemeine Fischereizonen werden aus der Gotland-Mündungsbereichsanzeige herausgefiltert, damit sie nicht fälschlich die ganze Ostsee einfärben.
+- Gemeinsame 48-h-Zeitachse für Wind, Strömung und Wassertemperatur bleibt erhalten und ist per Finger/Maus verschiebbar.
 
-## Wichtige Hinweise
+## Wichtige Testhinweise
 
-- Die automatische Küstenprüfung stellt sicher, dass Marker nicht mitten auf Land/offenem Wasser bleiben. Sie ersetzt noch keine fachliche Einzelbewertung jedes Angelabschnitts.
-- Copernicus-WMTS wird live geladen. Falls der Dienst/Browser die WMTS-Abfrage nicht zulässt, fällt die App auf die variable Open-Meteo-Pfeildarstellung zurück und meldet das im Status.
-- Die Schutzgebietskarte dient der Orientierung. Für rechtliche Entscheidungen gilt immer die amtliche Vorschrift bzw. Länsstyrelsen/HaV.
-
-
-## Neu in v6.1.2
-- Bathymetrie zeigt zusätzlich eine ca. 50-m-Orientierungslinie vor der Küste (aus OSM-Küstengeometrie abgeleitet; keine amtliche Grenzlinie).
-- Strömung ohne Zahlen unter den Pfeilen: nahezu stilles Wasser = Punkt, stärkere Strömung = längere und dickere Pfeile.
-- Dichtere, zoomabhängige Darstellung durch Interpolation zwischen den zugrunde liegenden Modell-/API-Punkten.
-- Farbige Geschwindigkeitsfläche bleibt parallel zur Richtungspfeil-Darstellung sichtbar.
-
-
-### v6.1.2 – Strömungsdarstellung verfeinert
-- zusammenhängende, klassierte Strömungsflächen statt einzelner Farbkreise
-- Farbfolge: fast weiß/hellgrün → grün → gelb → orange → rot
-- dichte schwarze Pfeile; Richtung über Pfeilrichtung, Stärke über Länge und Dicke
-- nahezu stehendes Wasser als Punkt
-- keine Zahlen direkt an den Pfeilen
-- Interpolation dient der Darstellung; sie erhöht nicht die physikalische Modellauflösung
-
-
-## UI-Feinschliff v6.1.2
-- Schnelle Layer-Leiste direkt oben auf der Karte: Karte / Wassertiefe / Wassertemperatur / Strömung.
-- Detaillierte Strömungslegende in Knoten mit denselben Geschwindigkeitsklassen wie die Farbfelder.
-- Dynamischer metrischer Maßstab unten rechts.
+- v6.1.3 ist eine **Testversion**. Die Strömungs- und Windanimation interpoliert zwischen Modelldatenpunkten, damit Strukturen lesbar werden. Dadurch entsteht keine zusätzliche physikalische Modellauflösung.
+- Die ca. 50-m-Linie ist nur eine Orientierungshilfe und keine vermessene oder rechtliche Grenze.
+- Die Tiefenfarblegende ist visuell an den aktuell verwendeten EMODnet-WMS-Layer angepasst; für eine metrisch exakt klassifizierte Tiefenkarte wäre später ein eigener Daten-/Darstellungsweg nötig.
+- Spotkoordinaten und amtliche Schutzgebiete müssen weiterhin einzeln fachlich geprüft werden. Es werden keine erfundenen Schutzkreise verwendet.
+- Die Parkplatzdaten stammen aus OpenStreetMap und können unvollständig sein; Zugang/Legalität muss vor Ort geprüft werden.
