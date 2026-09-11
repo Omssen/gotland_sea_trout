@@ -1,5 +1,5 @@
 # Deployment
 
-Alle Dateien dieses Ordners in den Root des `v6-test`-Branches hochladen. Danach den bestehenden GitHub-Pages-Workflow über `main` manuell ausführen.
+Die acht Dateien in den `v6-test`-Branch hochladen/ersetzen. Danach den bestehenden GitHub-Pages-Workflow über `main` starten.
 
-Test: https://omssen.github.io/gotland_sea_trout/v6-test/?v=6200
+Nach dem Laden einmal die Seite vollständig neu laden. Version oben muss `v6.2.2 TRUTH TEST` anzeigen.

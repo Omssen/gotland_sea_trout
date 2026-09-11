@@ -1,18 +1,12 @@
-# Gotland Sea Trout v6.2.0 FINAL
+# Gotland Sea Trout v6.2.2 TRUTH TEST
 
-Finaler statischer GitHub-Pages-Build mit Schwerpunkt auf stabiler mobiler Bedienung und ehrlicher Datenvisualisierung.
+Diagnose-Build für den Strömungsvergleich um Hoburgen.
 
-## Kernänderungen
-- Strömung: Copernicus Marine / SMHI Baltic Physics, offizieller `sea_water_velocity`-Vektorlayer. Die Farbfläche und die Richtungsvektoren werden getrennt geladen; keine clientseitige uo/vo-Pixeldecodierung.
-- Strömungsfläche wird nur optisch leicht geglättet. Die Modellauflösung wird dadurch nicht erhöht.
-- Trübung: Copernicus Sentinel-2 TUR/FNU mit eigener Satelliten-Zeitachse.
-- Legenden für Strömung und Trübung werden direkt über Copernicus WMTS `GetLegend` aus genau demselben Kartenstil bezogen. Dadurch stimmen Farbkarte, Wertebereich und Einheit zusammen.
-- Transparenz/weiße Bereiche im TUR-Layer bedeuten No-Data/Wolken, nicht klares Wasser.
-- Tile-basierte Layer sind iPhone-freundlich: kein rechenintensives clientseitiges Vektordecoding.
+Neu:
+- Zeitachse: 24 Stunden Vergangenheit + jetzt + 24 Stunden Zukunft.
+- Numerische Copernicus/SMHI uo/vo-Strömung bleibt aktiv.
+- In der aufgeklappten Strömungslegende gibt es **Hoburgen-Zahlencheck**.
+- Der Zahlencheck fragt fünf feste Punkte W/SW/S/SE/E direkt über WMTS GetFeatureInfo ab und zeigt Richtung, m/s sowie uo/vo.
+- Service-Worker-Cache-Buster auf v6.2.2 korrigiert (v6.2.1 hatte noch alte v6200-Asset-URLs im Cache).
 
-## Wichtig
-Copernicus-Strömung ist ein hydrodynamisches Modell (ca. 1 NM / ~2 km). Optische Glättung ist keine zusätzliche Messgenauigkeit. Sentinel-2 TUR ist ein 100-m-Produkt und kann durch Wolken/Datenlücken unvollständig sein.
-
-
-## v6.2.1 NUMERIC TEST
-Strömung wird nun numerisch über Copernicus WMTS GetFeatureInfo gelesen. Der Vektor-Endpunkt liefert die virtuelle Geschwindigkeit plus uo/vo-Komponenten. Die App rendert daraus eigene, zoomstabile Pfeile und eine geglättete Farbfläche. Keine künstliche Küsten-Umlenkung.
+Referenz: 11.09.2026 22:00 lokale Zeit = 20:00 UTC.
