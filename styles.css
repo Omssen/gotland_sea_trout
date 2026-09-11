@@ -125,3 +125,8 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .cmemsArrow{position:relative;height:22px;transform-origin:50% 50%;filter:drop-shadow(0 1px 1px rgba(255,255,255,.75))}
 .cmemsArrow:before{content:"";position:absolute;left:2px;top:10px;width:calc(100% - 8px);height:2px;background:#13262d;border-radius:2px}
 .cmemsArrow span{position:absolute;right:1px;top:6px;width:8px;height:8px;border-top:2px solid #13262d;border-right:2px solid #13262d;transform:rotate(45deg)}
+
+/* v6.2.0: soften raster magnitude without inventing extra vectors */
+.leaflet-tile.cmemsMagnitude,.cmemsMagnitude.leaflet-tile{filter:blur(.45px) saturate(.95);transform:translateZ(0)}
+.leaflet-tile.turbidityRaster,.turbidityRaster.leaflet-tile{filter:blur(.25px);transform:translateZ(0)}
+.officialLegend{display:block;width:min(260px,100%);max-height:92px;object-fit:contain;object-position:left center;background:#fff;border-radius:8px;margin:6px 0 8px;padding:3px}

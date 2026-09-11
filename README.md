@@ -1,11 +1,14 @@
-# Gotland Sea Trout v6.1.18 – Testversion
+# Gotland Sea Trout v6.2.0 FINAL
 
-## Neu in v6.1.18
+Finaler statischer GitHub-Pages-Build mit Schwerpunkt auf stabiler mobiler Bedienung und ehrlicher Datenvisualisierung.
 
-- Strömung direkt von Copernicus Marine / SMHI Baltic Physics als WMTS-Layer (`cmems_mod_bal_phy_anfc_PT15M-i`, 15-min Oberflächenströmung, ca. 2 km Modellraster).
-- Keine künstliche Küsten-Umlenkung und keine Open-Meteo-Strömung mehr.
-- Deutlich weniger Browser-Rechenlast: Copernicus liefert vorgerenderte Kacheln mit Vektoren.
-- Trübung weiter aus Copernicus Sentinel-2 HR Ocean Colour (TUR/FNU, 100 m), jetzt mit explizitem Satellitendatum (aktuell UTC-3 Tage) und klarer Meldung bei Datenlücken/Wolken.
-- Zeitachse lädt die Strömung für den gewählten Zeitpunkt neu.
+## Kernänderungen
+- Strömung: Copernicus Marine / SMHI Baltic Physics, offizieller `sea_water_velocity`-Vektorlayer. Die Farbfläche und die Richtungsvektoren werden getrennt geladen; keine clientseitige uo/vo-Pixeldecodierung.
+- Strömungsfläche wird nur optisch leicht geglättet. Die Modellauflösung wird dadurch nicht erhöht.
+- Trübung: Copernicus Sentinel-2 TUR/FNU mit eigener Satelliten-Zeitachse.
+- Legenden für Strömung und Trübung werden direkt über Copernicus WMTS `GetLegend` aus genau demselben Kartenstil bezogen. Dadurch stimmen Farbkarte, Wertebereich und Einheit zusammen.
+- Transparenz/weiße Bereiche im TUR-Layer bedeuten No-Data/Wolken, nicht klares Wasser.
+- Tile-basierte Layer sind iPhone-freundlich: kein rechenintensives clientseitiges Vektordecoding.
 
-Hinweis: Die Strömung ist Modellinformation mit ca. 2-km-Raster. Die Darstellung kann dichter wirken, ist aber keine 20–50-m-Messauflösung. Transparente Trübungsbereiche bedeuten fehlende verwertbare Satellitenbeobachtung.
+## Wichtig
+Copernicus-Strömung ist ein hydrodynamisches Modell (ca. 1 NM / ~2 km). Optische Glättung ist keine zusätzliche Messgenauigkeit. Sentinel-2 TUR ist ein 100-m-Produkt und kann durch Wolken/Datenlücken unvollständig sein.
