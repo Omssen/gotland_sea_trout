@@ -120,3 +120,8 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .smoothSeaTile{image-rendering:auto!important;filter:saturate(.94) contrast(.98)}
 .currentGlyph,.windGlyph{opacity:.88}
 @media(max-width:800px){.currentGlyph,.windGlyph{opacity:.84}.currentArrowWrap,.windArrowWrap{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px #0005)}}
+\n/* v6.1.17: lightweight Copernicus uo/vo arrows */
+.cmemsArrowWrap{background:transparent!important;border:0!important}
+.cmemsArrow{position:relative;height:22px;transform-origin:50% 50%;filter:drop-shadow(0 1px 1px rgba(255,255,255,.75))}
+.cmemsArrow:before{content:"";position:absolute;left:2px;top:10px;width:calc(100% - 8px);height:2px;background:#13262d;border-radius:2px}
+.cmemsArrow span{position:absolute;right:1px;top:6px;width:8px;height:8px;border-top:2px solid #13262d;border-right:2px solid #13262d;transform:rotate(45deg)}
