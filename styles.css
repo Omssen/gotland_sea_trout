@@ -130,3 +130,6 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .leaflet-tile.cmemsMagnitude,.cmemsMagnitude.leaflet-tile{filter:blur(.45px) saturate(.95);transform:translateZ(0)}
 .leaflet-tile.turbidityRaster,.turbidityRaster.leaflet-tile{filter:blur(.25px);transform:translateZ(0)}
 .officialLegend{display:block;width:min(260px,100%);max-height:92px;object-fit:contain;object-position:left center;background:#fff;border-radius:8px;margin:6px 0 8px;padding:3px}
+
+.currentScaleBar{height:14px;border-radius:8px;background:linear-gradient(90deg,#f6fbf5 0%,#d9efd5 10%,#91cf86 28%,#63bb67 45%,#fff04a 62%,#ffb23d 78%,#f36b2d 90%,#d9362b 100%);border:1px solid rgba(255,255,255,.5)}
+.currentScaleTicks{display:flex;justify-content:space-between;font-size:11px;margin:3px 1px 8px}

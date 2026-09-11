@@ -12,3 +12,7 @@ Finaler statischer GitHub-Pages-Build mit Schwerpunkt auf stabiler mobiler Bedie
 
 ## Wichtig
 Copernicus-Strömung ist ein hydrodynamisches Modell (ca. 1 NM / ~2 km). Optische Glättung ist keine zusätzliche Messgenauigkeit. Sentinel-2 TUR ist ein 100-m-Produkt und kann durch Wolken/Datenlücken unvollständig sein.
+
+
+## v6.2.1 NUMERIC TEST
+Strömung wird nun numerisch über Copernicus WMTS GetFeatureInfo gelesen. Der Vektor-Endpunkt liefert die virtuelle Geschwindigkeit plus uo/vo-Komponenten. Die App rendert daraus eigene, zoomstabile Pfeile und eine geglättete Farbfläche. Keine künstliche Küsten-Umlenkung.
