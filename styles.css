@@ -115,3 +115,8 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}
 .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:252px!important;max-width:46vw!important}
 @media(max-width:800px){.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:250px!important}.conditionStrip{bottom:132px!important}}
+
+/* v6.1.14: continuous sea renderer, subdued arrows */
+.smoothSeaTile{image-rendering:auto!important;filter:saturate(.94) contrast(.98)}
+.currentGlyph,.windGlyph{opacity:.88}
+@media(max-width:800px){.currentGlyph,.windGlyph{opacity:.84}.currentArrowWrap,.windArrowWrap{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px #0005)}}
