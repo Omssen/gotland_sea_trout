@@ -28,3 +28,24 @@ header{height:auto;min-height:58px;padding-top:max(8px,env(safe-area-inset-top))
 @media(max-width:800px){
  body{overflow:hidden}main{position:relative;height:calc(100dvh - 58px - env(safe-area-inset-top));overflow:hidden}#map{height:100%;min-height:0}.panelHandle{display:block;width:100%;border:0;border-radius:14px 14px 0 0;background:#0b3d4d;color:#fff;font-weight:900;padding:9px 12px;min-height:42px}#panel{position:absolute;left:0;right:0;bottom:0;z-index:810;background:#eef4f5eF;padding:0;max-height:48vh;overflow:auto;box-shadow:0 -4px 18px #0002;transition:max-height .2s ease}#panelContent{padding:7px 8px max(10px,env(safe-area-inset-bottom))}.panelCollapsed{max-height:46px!important;overflow:hidden!important}.panelCollapsed #panelContent{display:none}.quick{position:static;padding-bottom:5px}.quick button{min-height:38px}.quickLayers{left:66px;right:7px;top:8px}.quickLayers button{padding:7px 9px}.mapLegends{left:7px;bottom:58px;max-width:185px}.timeline{bottom:55px;width:calc(100% - 18px)}.leaflet-control-scale{margin-bottom:58px!important}.spotFilter{position:static}.ranking{margin-bottom:4px}.rankRow{padding:6px 0}.currentLegendRows{gap:2px}.legendHead{padding:6px 8px}.legendBody{padding:2px 8px 7px}
 }
+
+
+/* v6.1.4: coastal parking, one-hour timeline, mobile layer menu, themes */
+:root{--ui:#0b3d4d;--ui2:#168269;--panel:#eef4f5ef;--card:#fff;--ink:#18343e;--muted:#61757c}
+body[data-theme="marine"]{--ui:#07394a;--ui2:#16a39a;--panel:#0b3544f2;--card:#0f4657;--ink:#eefcff;--muted:#b8d4da;background:#082f3d;color:var(--ink)}
+body[data-theme="marine"] header,body[data-theme="marine"] #panel{background:var(--panel);color:var(--ink)}
+body[data-theme="marine"] .sheetCard,body[data-theme="marine"] .ranking,body[data-theme="marine"] .mapLegend{background:#0f4657;color:#eefcff}
+body[data-theme="marine"] .layerRow,body[data-theme="marine"] .metric,body[data-theme="marine"] .sourceList p{background:#174f5e;color:#eefcff}
+body[data-theme="marine"] .subtle,body[data-theme="marine"] .metric small{color:#b8d4da}
+body[data-theme="marine"] .legendHead{background:#0f4657;color:#eefcff}
+body[data-theme="light"]{--ui:#0b3d4d;--ui2:#168269;--panel:#eef4f5ef;--card:#fff;--ink:#18343e;--muted:#61757c}
+body[data-theme="outdoor"]{--ui:#294c58;--ui2:#667b57;--panel:#eee9dcf2;--card:#faf6ec;--ink:#2c3d3a;--muted:#6f7468;background:#e8e1d1;color:var(--ink)}
+header,.panelHandle,.timeline button,.quickLayers button.active,.listNo{background:var(--ui)!important}.switch input:checked+.slider{background:var(--ui2)!important}
+.quickToggle{display:none;position:absolute;z-index:740;right:7px;top:8px;border:0;border-radius:11px;padding:9px 11px;background:#fffffff2;box-shadow:0 3px 14px #0002;font-weight:900;color:#18343e}
+.timeButtons{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.timeButtons button{min-width:0;padding:0 5px;font-size:11px}
+.timeline{grid-template-columns:112px 1fr 125px}.timeline strong{line-height:1.25}
+.leaflet-control-attribution{background:#ffffffd9!important;border-radius:6px 0 0 0!important;font-size:9px!important;max-width:70vw;white-space:normal;text-align:right}.timelineVisible .leaflet-control-attribution{margin-bottom:112px!important}.timelineVisible .leaflet-control-scale{margin-bottom:112px!important}
+.miniNav{margin-top:6px;border:0;border-radius:8px;background:var(--ui);color:#fff;padding:6px 8px;font-weight:800}.themeChoices{display:grid;gap:8px}.themeChoice{text-align:left;border:2px solid transparent;border-radius:14px;padding:12px;background:#e9f0f1;color:#18343e}.themeChoice b,.themeChoice small{display:block}.themeChoice small{margin-top:3px}.themeChoice.selected{border-color:#16a39a;box-shadow:0 0 0 2px #16a39a22}.parkingIcon{box-shadow:0 2px 6px #0004}.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:#0b3d4dcc!important}.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:#fff!important;color:#0b3d4d!important;font-weight:900}
+@media(max-width:800px){
+ .quickToggle{display:block}.quickLayers{display:none;left:auto;right:7px;top:50px;max-width:210px;flex-direction:column;align-items:stretch;padding:6px;overflow:visible}.quickLayers.quickOpen{display:flex}.quickLayers button{text-align:left;padding:9px 11px}.leaflet-control-zoom{margin-top:8px!important}.timeline{grid-template-columns:92px 1fr 104px;bottom:55px}.timeButtons{gap:3px}.timeButtons button{font-size:10px}.timeline strong{font-size:9px}.timelineVisible .leaflet-control-attribution{margin-bottom:118px!important;max-width:55vw}.timelineVisible .leaflet-control-scale{margin-bottom:118px!important}.mapLegends{bottom:58px}.timelineVisible .mapLegends{bottom:126px}
+}

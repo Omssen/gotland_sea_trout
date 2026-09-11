@@ -1,8 +1,8 @@
-# Gotland Sea Trout v6.1.3 – Testversion
+# Gotland Sea Trout v6.1.4 – Testversion
 
 Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenansicht.
 
-## Neu in v6.1.3
+## Neu in v6.1.4
 
 - **Mobile Karte zuerst:** Auf dem Handy belegt die Karte fast den ganzen verfügbaren Bildschirm. Menü, Ranking und Spotliste liegen in einem einklappbaren unteren Drawer.
 - **Kompakte Legenden:** Legenden sind zunächst klein und lassen sich antippen/aufklappen.
@@ -18,8 +18,18 @@ Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenans
 
 ## Wichtige Testhinweise
 
-- v6.1.3 ist eine **Testversion**. Die Strömungs- und Windanimation interpoliert zwischen Modelldatenpunkten, damit Strukturen lesbar werden. Dadurch entsteht keine zusätzliche physikalische Modellauflösung.
+- v6.1.4 ist eine **Testversion**. Die Strömungs- und Windanimation interpoliert zwischen Modelldatenpunkten, damit Strukturen lesbar werden. Dadurch entsteht keine zusätzliche physikalische Modellauflösung.
 - Die ca. 50-m-Linie ist nur eine Orientierungshilfe und keine vermessene oder rechtliche Grenze.
 - Die Tiefenfarblegende ist visuell an den aktuell verwendeten EMODnet-WMS-Layer angepasst; für eine metrisch exakt klassifizierte Tiefenkarte wäre später ein eigener Daten-/Darstellungsweg nötig.
 - Spotkoordinaten und amtliche Schutzgebiete müssen weiterhin einzeln fachlich geprüft werden. Es werden keine erfundenen Schutzkreise verwendet.
 - Die Parkplatzdaten stammen aus OpenStreetMap und können unvollständig sein; Zugang/Legalität muss vor Ort geprüft werden.
+
+
+## v6.1.4 – Küstenfokus
+- Parkplatz-Layer lädt beim Einschalten küstennahe OSM-Parkplätze rund um Gotland in mehreren Abfragen. Es werden nur Parkplätze mit berechneter Entfernung bis max. 800 m zur OSM-Meeresküste gezeigt; `access=private/no` und `foot=no` werden ausgeschlossen. Die angezeigte Distanz ist Luftlinie, keine garantierte Gehwegdistanz.
+- Parkplätze werden geclustert und lösen sich beim Hineinzoomen in Einzelmarker auf.
+- Zeitachse zeigt Datum/Uhrzeit und hat −1h/+1h-Tasten.
+- Quellenangabe und Maßstab werden bei geöffneter Zeitachse nach oben versetzt.
+- Mobile Darstellungswahl ist kompakt aufklappbar.
+- Drei Designvarianten plus Automatik unter „Mehr → Erscheinungsbild“.
+- Windpartikel reagieren stärker über Geschwindigkeit und Linienstärke auf die Windstärke.
