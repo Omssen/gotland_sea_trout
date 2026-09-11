@@ -107,3 +107,11 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
  .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{right:8px!important;bottom:212px!important;margin:0!important}
  .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{right:8px!important;bottom:246px!important;margin:0!important;max-width:48vw!important}
 }
+
+/* v6.1.13: stable mobile controls */
+.leaflet-bottom.leaflet-right{pointer-events:none!important}
+.leaflet-bottom.leaflet-right .leaflet-control-scale{position:absolute!important;right:8px!important;bottom:64px!important;margin:0!important;z-index:760!important;pointer-events:none!important}
+.leaflet-bottom.leaflet-right .leaflet-control-attribution{position:absolute!important;right:8px!important;bottom:44px!important;margin:0!important;z-index:755!important;pointer-events:auto!important;max-width:52vw!important}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:252px!important;max-width:46vw!important}
+@media(max-width:800px){.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:250px!important}.conditionStrip{bottom:132px!important}}
