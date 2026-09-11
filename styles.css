@@ -115,3 +115,23 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}
 .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:252px!important;max-width:46vw!important}
 @media(max-width:800px){.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:250px!important}.conditionStrip{bottom:132px!important}}
+
+/* v6.1.15: continuous sea renderer, subdued arrows */
+.smoothSeaTile{image-rendering:auto!important;filter:saturate(.94) contrast(.98)}
+.currentGlyph,.windGlyph{opacity:.88}
+@media(max-width:800px){.currentGlyph,.windGlyph{opacity:.84}.currentArrowWrap,.windArrowWrap{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px #0005)}}
+\n/* v6.1.17: lightweight Copernicus uo/vo arrows */
+.cmemsArrowWrap{background:transparent!important;border:0!important}
+.cmemsArrow{position:relative;height:22px;transform-origin:50% 50%;filter:drop-shadow(0 1px 1px rgba(255,255,255,.75))}
+.cmemsArrow:before{content:"";position:absolute;left:2px;top:10px;width:calc(100% - 8px);height:2px;background:#13262d;border-radius:2px}
+.cmemsArrow span{position:absolute;right:1px;top:6px;width:8px;height:8px;border-top:2px solid #13262d;border-right:2px solid #13262d;transform:rotate(45deg)}
+
+/* v6.2.0: soften raster magnitude without inventing extra vectors */
+.leaflet-tile.cmemsMagnitude,.cmemsMagnitude.leaflet-tile{filter:blur(.45px) saturate(.95);transform:translateZ(0)}
+.leaflet-tile.turbidityRaster,.turbidityRaster.leaflet-tile{filter:blur(.25px);transform:translateZ(0)}
+.officialLegend{display:block;width:min(260px,100%);max-height:92px;object-fit:contain;object-position:left center;background:#fff;border-radius:8px;margin:6px 0 8px;padding:3px}
+
+.currentScaleBar{height:14px;border-radius:8px;background:linear-gradient(90deg,#f6fbf5 0%,#d9efd5 10%,#91cf86 28%,#63bb67 45%,#fff04a 62%,#ffb23d 78%,#f36b2d 90%,#d9362b 100%);border:1px solid rgba(255,255,255,.5)}
+.currentScaleTicks{display:flex;justify-content:space-between;font-size:11px;margin:3px 1px 8px}
+
+.legendTestBtn{width:100%;margin-top:10px;border:0;border-radius:10px;padding:10px 12px;background:#fff;color:#0b3d4d;font-weight:800;font-size:13px;box-shadow:0 1px 4px #0002}.truthResult{margin-top:12px}.truthTable{display:grid;gap:6px}.truthTable>div{display:grid;grid-template-columns:.8fr 1fr .7fr 1.15fr;gap:6px;align-items:center;padding:8px 6px;border-bottom:1px solid #d8e3e7;font-size:13px}.truthTable .truthHead{font-size:11px;font-weight:800;text-transform:uppercase;opacity:.7}.truthTable small{display:block;font-size:10px;opacity:.65}.truthTable .truthFail{grid-template-columns:.8fr 2.85fr;color:#9b2c2c}.truthResult code{font-size:11px;word-break:break-all}@media(max-width:520px){.truthTable>div{grid-template-columns:.65fr 1fr .65fr 1.15fr;font-size:12px;gap:4px;padding:7px 2px}}
