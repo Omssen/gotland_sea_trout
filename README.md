@@ -1,6 +1,6 @@
-# Gotland Sea Trout v6.1.17 – Testversion
+# Gotland Sea Trout v6.1.18 – Testversion
 
-## Neu in v6.1.17
+## Neu in v6.1.18
 
 - Strömung direkt von Copernicus Marine / SMHI Baltic Physics als WMTS-Layer (`cmems_mod_bal_phy_anfc_PT15M-i`, 15-min Oberflächenströmung, ca. 2 km Modellraster).
 - Keine künstliche Küsten-Umlenkung und keine Open-Meteo-Strömung mehr.
