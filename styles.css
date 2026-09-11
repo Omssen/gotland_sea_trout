@@ -52,7 +52,7 @@ header,.panelHandle,.timeline button,.quickLayers button.active,.listNo{backgrou
 \n/* v6.1.5: statische Vektoren und klare Küstenkante */
 .windGlyph{background:transparent!important;border:0!important;overflow:visible!important}.windArrowWrap{position:relative;display:flex;align-items:center;transform-origin:50% 50%;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 1px 1px #0006)}.windShaft{display:block;border-radius:99px;background:#111}.windHead{display:block;width:0;height:0;border-left-style:solid;border-left-color:#111;border-top-style:solid;border-top-color:transparent;border-bottom-style:solid;border-bottom-color:transparent}.scalarBands{image-rendering:auto}.flowCanvas{display:none!important}
 @media(max-width:800px){.timeline{grid-template-columns:76px 1fr 104px}.timeButtons{display:grid;grid-template-columns:1fr 1fr;gap:4px}.timeButtons button{min-width:0;padding:0 4px}.timelineVisible .leaflet-control-attribution{margin-bottom:124px!important;max-width:52vw;font-size:8px}.timelineVisible .leaflet-control-scale{margin-bottom:124px!important}}
-\n/* v6.1.9: kompakte mobile Messleiste, größere Zeitbedienung, bessere Warnkontraste */
+\n/* v6.1.10: kompakte mobile Messleiste, größere Zeitbedienung, bessere Warnkontraste */
 :root{--land-cover:#f4f0d8}
 body[data-theme="marine"]{--land-cover:#dce7cf}
 body[data-theme="light"]{--land-cover:#f4f0d8}
@@ -60,3 +60,25 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 .officialBox{color:#3d2323!important;background:#fff0f0!important;border-left-color:#cf4750!important}.officialBox a{color:#0645ad!important;font-weight:800}.officialBox b{color:#7c2028!important}
 .conditionStrip{position:absolute;z-index:720;left:12px;right:12px;bottom:128px;display:flex;gap:6px;justify-content:center;pointer-events:none}.conditionStrip span{background:rgba(7,57,74,.92);color:#fff;border-radius:999px;padding:6px 9px;font-size:10px;box-shadow:0 2px 8px #0002;white-space:nowrap}.conditionStrip b{font-weight:900}.timeline{min-height:64px;grid-template-columns:124px 1fr 150px;gap:10px;padding:9px 12px}.timeButtons{grid-template-columns:1fr 1.2fr;gap:7px}.timeButtons button{min-height:46px;font-size:15px;border-radius:12px}.timeline input[type="range"]{height:42px}.timeline input[type="range"]::-webkit-slider-thumb{width:30px;height:30px}.timeline strong{font-size:12px;text-align:right}.turbGrad{background:linear-gradient(90deg,#5da8d6,#56c6c0,#72c86f,#e5d64c,#ed8d3f,#9d5a3b)}
 @media(max-width:800px){.conditionStrip{left:8px;right:8px;bottom:127px;gap:4px;overflow:hidden}.conditionStrip span{font-size:9px;padding:5px 7px}.timeline{grid-template-columns:112px 1fr 112px;bottom:55px;min-height:70px;padding:9px}.timeButtons button{min-height:48px;font-size:14px}.timeline strong{font-size:10px}.timelineVisible .mapLegends{bottom:205px}.timelineVisible .leaflet-control-attribution{margin-bottom:190px!important}.timelineVisible .leaflet-control-scale{margin-bottom:190px!important}}
+
+/* v6.1.10: Uhrzeit/Datum der Zeitachse auf allen Themes klar lesbar */
+.timeline strong#timeLabel{color:#102f39!important;background:rgba(255,255,255,.96)!important;border:1px solid rgba(11,61,77,.16);border-radius:10px;padding:8px 10px;min-width:132px;text-align:center!important;font-size:13px!important;font-weight:900!important;letter-spacing:.01em;box-shadow:0 1px 5px rgba(0,0,0,.08)}
+@media(max-width:800px){.timeline strong#timeLabel{font-size:12px!important;min-width:112px;padding:8px 6px;white-space:nowrap}}
+
+
+/* v6.1.11: sichtbare Version, präzise coastline-basierte Maske, konfliktfreie Unterkante */
+.versionBadge{display:inline-block;margin-left:6px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.16);font-size:10px;line-height:1;color:#fff;vertical-align:middle;white-space:nowrap}
+.leaflet-control-attribution{margin-bottom:54px!important;max-width:62vw!important;padding:2px 5px!important;line-height:1.15!important}
+.timelineVisible .leaflet-control-attribution{margin-bottom:198px!important;max-width:50vw!important}
+.timelineVisible .leaflet-control-scale{margin-bottom:198px!important}
+.conditionStrip{bottom:132px;max-width:calc(100% - 24px);margin:auto}
+.timeline strong#timeLabel{color:#0b3441!important;background:#fff!important;border:2px solid rgba(11,61,77,.18)!important;font-size:14px!important}
+@media(max-width:800px){
+ header strong{display:flex;align-items:center;gap:4px;white-space:nowrap}.versionBadge{font-size:9px;margin-left:2px;padding:3px 5px}
+ .leaflet-control-attribution{margin-bottom:50px!important;max-width:58vw!important;font-size:7px!important}
+ .timelineVisible .leaflet-control-attribution{margin-bottom:196px!important;max-width:46vw!important}
+ .timelineVisible .leaflet-control-scale{margin-bottom:196px!important}
+ .conditionStrip{left:auto;right:8px;bottom:130px;max-width:72%;justify-content:flex-end}
+ .conditionStrip span{padding:5px 7px;font-size:9px}
+ .timeline strong#timeLabel{font-size:13px!important;min-width:118px!important;color:#082d38!important}
+}
