@@ -1,0 +1,61 @@
+name: Hoburgen Current Truth Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      local_time:
+        description: "Gotland/Deutschland Lokalzeit (Europe/Stockholm), z.B. 2026-09-11T22:00:00"
+        required: true
+        default: "2026-09-11T22:00:00"
+
+permissions:
+  contents: read
+
+jobs:
+  truth-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+      COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements-current.txt
+
+      - name: Check credentials exist
+        shell: bash
+        run: |
+          test -n "$COPERNICUSMARINE_SERVICE_USERNAME" || (echo "::error::COPERNICUSMARINE_SERVICE_USERNAME fehlt" && exit 1)
+          test -n "$COPERNICUSMARINE_SERVICE_PASSWORD" || (echo "::error::COPERNICUSMARINE_SERVICE_PASSWORD fehlt" && exit 1)
+
+      - name: Run exact Hoburgen truth test
+        run: |
+          python scripts/hoburgen_truth_test.py \
+            --local-time "${{ inputs.local_time }}" \
+            --output-dir out
+
+      - name: Add report to Actions summary
+        if: always()
+        shell: bash
+        run: |
+          if [ -f out/hoburgen_truth.md ]; then
+            cat out/hoburgen_truth.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload numeric result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hoburgen-current-truth
+          path: out/
+          if-no-files-found: warn
