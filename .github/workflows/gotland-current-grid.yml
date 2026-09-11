@@ -1,0 +1,58 @@
+name: Build Gotland Current Grid
+
+on:
+  workflow_dispatch:
+    inputs:
+      local_time:
+        description: "Gotland local time"
+        required: true
+        default: "2026-09-11T22:00:00"
+      step:
+        description: "1 = full model grid, 2 = every second cell"
+        required: true
+        default: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  build-grid:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      COPERNICUSMARINE_SERVICE_USERNAME: ${{ secrets.COPERNICUSMARINE_SERVICE_USERNAME }}
+      COPERNICUSMARINE_SERVICE_PASSWORD: ${{ secrets.COPERNICUSMARINE_SERVICE_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-current.txt
+
+      - name: Build Gotland JSON grid
+        run: |
+          python scripts/gotland_current_grid.py \
+            --local-time "${{ inputs.local_time }}" \
+            --step "${{ inputs.step }}" \
+            --output-dir out
+
+      - name: Add summary
+        if: always()
+        run: |
+          if [ -f out/gotland_current.md ]; then
+            cat out/gotland_current.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Gotland current grid
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gotland-current-grid
+          path: out/
+          if-no-files-found: warn
