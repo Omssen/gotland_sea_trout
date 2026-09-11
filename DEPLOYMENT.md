@@ -1,11 +1,10 @@
-# Online stellen
+# Deployment v6.1.10
 
-## GitHub Pages
-1. Neues GitHub-Repository anlegen.
-2. Den **Inhalt dieses Ordners** in den `main`-Branch hochladen.
-3. GitHub: Settings → Pages → Source → **GitHub Actions**.
-4. Nach dem Workflow-Lauf erscheint die öffentliche HTTPS-Adresse.
-5. iPhone: Safari → Teilen → Zum Home-Bildschirm. Android: Chrome → App installieren.
+Die Dateien werden in den Branch `v6-test` geladen. Die Hauptversion (`main`) bleibt unverändert.
 
-## Cloudflare Pages
-Repository mit Cloudflare Pages verbinden. Kein Build-Befehl nötig; Ausgabeordner ist das Repository-Root (`.`).
+Der Pages-Workflow baut die Hauptseite aus `main` und kopiert `v6-test` nach `site/v6-test/`.
+
+Wenn GitHub wegen Environment Protection einen direkten Lauf aus `v6-test` ablehnt, in **Actions → Deploy GitHub Pages → Run workflow** den Branch **main** wählen. Der main-Workflow holt danach automatisch den aktuellen `v6-test`-Stand.
+
+Test-URL:
+`https://omssen.github.io/gotland_sea_trout/v6-test/`
