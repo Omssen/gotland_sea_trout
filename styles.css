@@ -64,3 +64,54 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
 /* v6.1.10: Uhrzeit/Datum der Zeitachse auf allen Themes klar lesbar */
 .timeline strong#timeLabel{color:#102f39!important;background:rgba(255,255,255,.96)!important;border:1px solid rgba(11,61,77,.16);border-radius:10px;padding:8px 10px;min-width:132px;text-align:center!important;font-size:13px!important;font-weight:900!important;letter-spacing:.01em;box-shadow:0 1px 5px rgba(0,0,0,.08)}
 @media(max-width:800px){.timeline strong#timeLabel{font-size:12px!important;min-width:112px;padding:8px 6px;white-space:nowrap}}
+
+
+/* v6.1.11: sichtbare Version, präzise coastline-basierte Maske, konfliktfreie Unterkante */
+.versionBadge{display:inline-block;margin-left:6px;padding:3px 6px;border-radius:999px;background:rgba(255,255,255,.16);font-size:10px;line-height:1;color:#fff;vertical-align:middle;white-space:nowrap}
+.leaflet-control-attribution{margin-bottom:54px!important;max-width:62vw!important;padding:2px 5px!important;line-height:1.15!important}
+.timelineVisible .leaflet-control-attribution{margin-bottom:198px!important;max-width:50vw!important}
+.timelineVisible .leaflet-control-scale{margin-bottom:198px!important}
+.conditionStrip{bottom:132px;max-width:calc(100% - 24px);margin:auto}
+.timeline strong#timeLabel{color:#0b3441!important;background:#fff!important;border:2px solid rgba(11,61,77,.18)!important;font-size:14px!important}
+@media(max-width:800px){
+ header strong{display:flex;align-items:center;gap:4px;white-space:nowrap}.versionBadge{font-size:9px;margin-left:2px;padding:3px 5px}
+ .leaflet-control-attribution{margin-bottom:50px!important;max-width:58vw!important;font-size:7px!important}
+ .timelineVisible .leaflet-control-attribution{margin-bottom:196px!important;max-width:46vw!important}
+ .timelineVisible .leaflet-control-scale{margin-bottom:196px!important}
+ .conditionStrip{left:auto;right:8px;bottom:130px;max-width:72%;justify-content:flex-end}
+ .conditionStrip span{padding:5px 7px;font-size:9px}
+ .timeline strong#timeLabel{font-size:13px!important;min-width:118px!important;color:#082d38!important}
+}
+
+/* v6.1.12: Daten immer sichtbar + getrenntes Landoverlay + fest angedockter Maßstab */
+.landOverlayTile{pointer-events:none!important}
+/* Leaflet-Controls nicht mehr im normalen Bottom-Flow: feste, konfliktfreie Plätze */
+.leaflet-bottom.leaflet-right .leaflet-control-scale{
+  position:absolute!important;right:10px!important;bottom:64px!important;margin:0!important;
+  z-index:760!important;background:#fffffff0!important;padding:3px 5px!important;border-radius:7px!important;
+  box-shadow:0 2px 8px #0002!important;
+}
+.leaflet-bottom.leaflet-right .leaflet-control-attribution{
+  position:absolute!important;right:8px!important;bottom:48px!important;margin:0!important;
+  max-width:58vw!important;z-index:755!important;
+}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{
+  right:10px!important;bottom:214px!important;margin:0!important;
+}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{
+  right:8px!important;bottom:244px!important;margin:0!important;max-width:52vw!important;
+}
+@media(max-width:800px){
+ .leaflet-bottom.leaflet-right .leaflet-control-scale{right:8px!important;bottom:62px!important;margin:0!important}
+ .leaflet-bottom.leaflet-right .leaflet-control-attribution{right:8px!important;bottom:46px!important;margin:0!important;max-width:55vw!important}
+ .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{right:8px!important;bottom:212px!important;margin:0!important}
+ .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{right:8px!important;bottom:246px!important;margin:0!important;max-width:48vw!important}
+}
+
+/* v6.1.13: stable mobile controls */
+.leaflet-bottom.leaflet-right{pointer-events:none!important}
+.leaflet-bottom.leaflet-right .leaflet-control-scale{position:absolute!important;right:8px!important;bottom:64px!important;margin:0!important;z-index:760!important;pointer-events:none!important}
+.leaflet-bottom.leaflet-right .leaflet-control-attribution{position:absolute!important;right:8px!important;bottom:44px!important;margin:0!important;z-index:755!important;pointer-events:auto!important;max-width:52vw!important}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:252px!important;max-width:46vw!important}
+@media(max-width:800px){.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{bottom:218px!important}.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{bottom:250px!important}.conditionStrip{bottom:132px!important}}

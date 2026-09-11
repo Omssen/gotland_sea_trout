@@ -1,8 +1,8 @@
-# Gotland Sea Trout v6.1.10 – Testversion
+# Gotland Sea Trout v6.1.13 – Testversion
 
 Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenansicht.
 
-## Neu in v6.1.10
+## Neu in v6.1.13
 
 ### Neuer Layer-Renderer
 - Strömung, Wind und Wassertemperatur werden nicht mehr als ein einzelnes rechteckiges Bild-Overlay gezeichnet, sondern als Leaflet-Kachelraster über den sichtbaren Meeresbereich.
@@ -24,14 +24,14 @@ Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenans
 
 ## Wichtige Testhinweise
 
-- v6.1.10 ist eine **Testversion**. Strömung und Wind werden statisch aus interpolierten Modelldaten dargestellt. Die feinere Darstellung an der Küste erzeugt keine zusätzliche physikalische Modellauflösung.
+- v6.1.13 ist eine **Testversion**. Strömung und Wind werden statisch aus interpolierten Modelldaten dargestellt. Die feinere Darstellung an der Küste erzeugt keine zusätzliche physikalische Modellauflösung.
 - Die ca. 50-m-Linie ist nur eine Orientierungshilfe und keine vermessene oder rechtliche Grenze.
 - Die Tiefenfarblegende ist visuell an den aktuell verwendeten EMODnet-WMS-Layer angepasst; für eine metrisch exakt klassifizierte Tiefenkarte wäre später ein eigener Daten-/Darstellungsweg nötig.
 - Spotkoordinaten und amtliche Schutzgebiete müssen weiterhin einzeln fachlich geprüft werden. Es werden keine erfundenen Schutzkreise verwendet.
 - Die Parkplatzdaten stammen aus OpenStreetMap und können unvollständig sein; Zugang/Legalität muss vor Ort geprüft werden.
 
 
-## v6.1.10 – Küstenfokus
+## v6.1.13 – Küstenfokus
 - Parkplatz-Layer lädt beim Einschalten küstennahe OSM-Parkplätze rund um Gotland in mehreren Abfragen. Es werden nur Parkplätze mit berechneter Entfernung bis max. 800 m zur OSM-Meeresküste gezeigt; `access=private/no` und `foot=no` werden ausgeschlossen. Die angezeigte Distanz ist Luftlinie, keine garantierte Gehwegdistanz.
 - Parkplätze werden geclustert und lösen sich beim Hineinzoomen in Einzelmarker auf.
 - Zeitachse zeigt Datum/Uhrzeit und hat −1h/+1h-Tasten.
@@ -39,7 +39,7 @@ Diese Version ist eine Qualitäts- und Bedienungsrunde für die mobile Kartenans
 - Mobile Darstellungswahl ist kompakt aufklappbar.
 - Drei Designvarianten plus Automatik unter „Mehr → Erscheinungsbild“.
 
-## Neu in v6.1.10 TEST
+## Neu in v6.1.13 TEST
 - Trübungs-Layer (Copernicus Marine HR Ocean Colour / Sentinel-2, TUR/FNU)
 - Wellenhöhe und Wasserstand als zusätzliche Layer
 - eine einheitliche Quellenlogik ohne Quellenauswahl für den Nutzer
