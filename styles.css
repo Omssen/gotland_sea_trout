@@ -82,3 +82,28 @@ body[data-theme="outdoor"]{--land-cover:#e9dfc4}
  .conditionStrip span{padding:5px 7px;font-size:9px}
  .timeline strong#timeLabel{font-size:13px!important;min-width:118px!important;color:#082d38!important}
 }
+
+/* v6.1.12: Daten immer sichtbar + getrenntes Landoverlay + fest angedockter Maßstab */
+.landOverlayTile{pointer-events:none!important}
+/* Leaflet-Controls nicht mehr im normalen Bottom-Flow: feste, konfliktfreie Plätze */
+.leaflet-bottom.leaflet-right .leaflet-control-scale{
+  position:absolute!important;right:10px!important;bottom:64px!important;margin:0!important;
+  z-index:760!important;background:#fffffff0!important;padding:3px 5px!important;border-radius:7px!important;
+  box-shadow:0 2px 8px #0002!important;
+}
+.leaflet-bottom.leaflet-right .leaflet-control-attribution{
+  position:absolute!important;right:8px!important;bottom:48px!important;margin:0!important;
+  max-width:58vw!important;z-index:755!important;
+}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{
+  right:10px!important;bottom:214px!important;margin:0!important;
+}
+.timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{
+  right:8px!important;bottom:244px!important;margin:0!important;max-width:52vw!important;
+}
+@media(max-width:800px){
+ .leaflet-bottom.leaflet-right .leaflet-control-scale{right:8px!important;bottom:62px!important;margin:0!important}
+ .leaflet-bottom.leaflet-right .leaflet-control-attribution{right:8px!important;bottom:46px!important;margin:0!important;max-width:55vw!important}
+ .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-scale{right:8px!important;bottom:212px!important;margin:0!important}
+ .timelineVisible .leaflet-bottom.leaflet-right .leaflet-control-attribution{right:8px!important;bottom:246px!important;margin:0!important;max-width:48vw!important}
+}
