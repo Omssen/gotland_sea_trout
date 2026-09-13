@@ -1,6 +1,7 @@
 /* v6.2.4k SMOOTH FIELD + explicit compass arrows
    Performance patch: adaptive low-res field, lighter blur, fewer vector samples,
-   no off-screen tile buffer. Numeric CMEMS values and directions are unchanged. */
+   no off-screen tile buffer. Numeric CMEMS values and directions are unchanged.
+   Coast fix: final canvas output is hard-clipped to closed OSM land polygons. */
 (function(){
   function smoothRgb(v){const s=[[0,[239,248,240]],[.05,[220,240,216]],[.10,[195,229,188]],[.16,[157,211,148]],[.23,[112,191,116]],[.31,[176,207,96]],[.40,[225,216,83]],[.50,[240,193,73]],[.62,[241,151,65]],[.75,[225,95,57]]];if(v<=0)return s[0][1];for(let i=1;i<s.length;i++)if(v<=s[i][0]){const t=(v-s[i-1][0])/(s[i][0]-s[i-1][0]);return s[i-1][1].map((a,j)=>Math.round(a+(s[i][1][j]-a)*t))}return s[s.length-1][1]}
   function edgeFade(lat,lon,samples){const g=samples?.numericGrid;if(!g)return 0;const s=g.ys[0],n=g.ys[g.ys.length-1],w=g.xs[0],e=g.xs[g.xs.length-1];if(lat<s||lat>n||lon<w||lon>e)return 0;const ns=Math.min((lat-s)*111.2,(n-lat)*111.2),ew=Math.min((lon-w)*111.2*Math.cos(lat*Math.PI/180),(e-lon)*111.2*Math.cos(lat*Math.PI/180)),t=Math.max(0,Math.min(1,Math.min(ns,ew)/10));return t*t*(3-2*t)}
@@ -17,7 +18,9 @@
         const ef=edgeFade(ll.lat,ll.lng,samples),fade=domainFade(ll.lat,ll.lng);if(ef<=0||fade<=0)continue;
         const rgb=smoothRgb(q.v),k=(y*lw+x)*4,a=q.quality==='raw'?148:62;d[k]=rgb[0];d[k+1]=rgb[1];d[k+2]=rgb[2];d[k+3]=Math.round(a*fade*ef)
       }
-      lc.putImageData(img,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='medium';ctx.filter='blur(2.5px)';ctx.drawImage(low,margin,margin,lw-margin*2,lh-margin*2,0,0,size.x,size.y);ctx.filter='none';return tile
+      lc.putImageData(img,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='medium';ctx.filter='blur(2.5px)';ctx.drawImage(low,margin,margin,lw-margin*2,lh-margin*2,0,0,size.x,size.y);ctx.filter='none';
+      eraseLandFromTile(ctx,coords,size);
+      return tile
     }});
     return new G({pane:'seaDataPane',tileSize:256,opacity:1,updateWhenIdle:true,updateWhenZooming:false,keepBuffer:0,noWrap:true,bounds:[[GOTLAND_RENDER_DOMAIN.s,GOTLAND_RENDER_DOMAIN.w],[GOTLAND_RENDER_DOMAIN.n,GOTLAND_RENDER_DOMAIN.e]]})
   };
@@ -27,10 +30,12 @@
     const V=L.GridLayer.extend({createTile:function(coords){
       const tile=L.DomUtil.create('canvas','numericCompassCanvas'),size=this.getTileSize();tile.width=size.x;tile.height=size.y;
       const ctx=tile.getContext('2d',{alpha:true}),origin=L.point(coords.x*size.x,coords.y*size.y),gap=vectorGap(coords.z),offset=gap/2;
-      for(let y=offset;y<size.y;y+=gap)for(let x=offset;x<size.x;x+=gap){const ll=map.unproject(origin.add([x,y]),coords.z);if(!insideRenderDomain(ll.lat,ll.lng)||isLandCoast(ll.lat,ll.lng))continue;const q=numericCoastalVector(ll.lat,ll.lng,samples);if(q)arrow(ctx,x,y,q)}return tile
+      for(let y=offset;y<size.y;y+=gap)for(let x=offset;x<size.x;x+=gap){const ll=map.unproject(origin.add([x,y]),coords.z);if(!insideRenderDomain(ll.lat,ll.lng)||isLandCoast(ll.lat,ll.lng))continue;const q=numericCoastalVector(ll.lat,ll.lng,samples);if(q)arrow(ctx,x,y,q)}
+      eraseLandFromTile(ctx,coords,size);
+      return tile
     }});
     return new V({pane:'currentVectorPane',tileSize:256,opacity:1,updateWhenIdle:true,updateWhenZooming:false,keepBuffer:0,noWrap:true,bounds:[[GOTLAND_RENDER_DOMAIN.s,GOTLAND_RENDER_DOMAIN.w],[GOTLAND_RENDER_DOMAIN.n,GOTLAND_RENDER_DOMAIN.e]]})
   }
   drawNumericCurrent=function(samples,layer){numericSmoothCurrentLayer(samples).addTo(layer);vectors(samples).addTo(layer)};
-  const oldShow=showNumericCurrent;showNumericCurrent=async function(){await oldShow();status('NUMERISCH · SMOOTH FIELD · Performance-Modus · CMEMS-Werte/Pfeilrichtungen unverändert')};
+  const oldShow=showNumericCurrent;showNumericCurrent=async function(){await oldShow();status('NUMERISCH · CURRENT GRID · OSM-Küstenmaske · CMEMS-Werte/Pfeilrichtungen unverändert')};
 })();
