@@ -35,7 +35,7 @@ function numericVector(lat,lon,samples){
 }
 async function loadNumericGridFile(){
   if(numericGridCache)return numericGridCache;
-  const response=await fetch('data/current/latest.json?v=6240');
+  const response=await fetch('data/current/latest.json?v=6241');
   if(!response.ok)throw Error('Grid HTTP '+response.status);
   const data=await response.json();
   const samples=prepareNumericGrid((data.points||[]).map(p=>{
@@ -62,3 +62,20 @@ async function showNumericCurrent(){
   updateLandCover(); renderLegends();
   status(`NUMERISCH · ${s.length.toLocaleString('de-DE')} CMEMS uo/vo-Punkte · Modellraster ~2 km`);
 }
+
+/* v6.2.4 bridge: make every existing current-layer trigger use the numeric grid.
+   For times outside the one published test grid, keep the official WMTS as a safe fallback. */
+const numericOldLoadVectors=loadVectors;
+loadVectors=async function(kind){
+  if(kind!=='current')return numericOldLoadVectors(kind);
+  try{
+    await showNumericCurrent();
+  }catch(e){
+    console.warn('Numeric current unavailable for selected time; WMTS fallback:',e);
+    currentLayer.clearLayers();active.current=true;updateTimeline();
+    if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
+    officialCurrentWmtsLayer().addTo(currentLayer);
+    updateLandCover();renderLegends();
+    status('Strömung · WMTS-Fallback · numerisches Test-Grid nur für 13.09.2026 12:00 CEST');
+  }
+};
