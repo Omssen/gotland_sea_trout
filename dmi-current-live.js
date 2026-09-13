@@ -11,3 +11,9 @@ function gstDmiPoint(ft){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(u)||!Number.isFinite(n))return null;
  const x=vdFrom(u,n);return {lat,lon,u,n,v:x.v,dir:x.dir,step:p.step||null};
 }
+async function gstDmiGrid(){
+ const data=await gstDmiCurrentQuery();
+ const pts=(data?.features||[]).map(gstDmiPoint).filter(Boolean);
+ if(pts.length<100)throw Error('DMI-Raster unvollständig: '+pts.length);
+ return {data,samples:prepareNumericGrid(pts)};
+}
