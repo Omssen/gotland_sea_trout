@@ -21,6 +21,19 @@ function numericBracket(a,x){
   if(x===a[h])return[h,h,0];
   return[l,h,(x-a[l])/(a[h]-a[l]||1)];
 }
+/* Nearest grid coordinate lookup used by the coastal renderer when a bilinear
+   cell contains no valid wet values. This helper was missing in v6.2.4k and
+   caused the local current layer to abort as soon as a coastal/no-data tile
+   was rendered. */
+function numericNearestIndex(a,x){
+  if(!a?.length||!Number.isFinite(x))return null;
+  if(x<=a[0])return 0;
+  const last=a.length-1;
+  if(x>=a[last])return last;
+  let l=0,h=last;
+  while(h-l>1){const m=(l+h)>>1;if(a[m]<x)l=m;else h=m}
+  return Math.abs(a[l]-x)<=Math.abs(a[h]-x)?l:h;
+}
 function numericVector(lat,lon,samples){
   const g=samples?.numericGrid, by=g&&numericBracket(g.ys,lat), bx=g&&numericBracket(g.xs,lon);
   if(!by||!bx)return null;
@@ -35,13 +48,13 @@ function numericVector(lat,lon,samples){
 }
 async function loadNumericGridFile(){
   if(numericGridCache)return numericGridCache;
-  const response=await fetch('data/current/latest.json?v=6251',{cache:'no-store'});
+  const response=await fetch('data/current/latest.json?v=6252',{cache:'no-store'});
   if(!response.ok)throw Error('Grid HTTP '+response.status);
   const data=await response.json();
   const samples=prepareNumericGrid((data.points||[]).map(p=>{
     const u=+p.u,n=+p.v,x=vdFrom(u,n);
     return {lat:+p.lat,lon:+p.lon,u,n,v:x.v,dir:x.dir};
-  }).filter(p=>Number.isFinite(p.u)&&Number.isFinite(p.n)));
+  }).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Number.isFinite(p.u)&&Number.isFinite(p.n)));
   if(samples.length<1000)throw Error('Grid unvollständig: '+samples.length);
   numericGridCache={data,samples};
   return numericGridCache;
@@ -62,12 +75,12 @@ async function showNumericCurrent(){
   if(typeof drawNumericCurrent==='function') drawNumericCurrent(s,currentLayer);
   else { drawScalarBands(s,currentLayer,currentColor,true,'current'); drawStaticVectors(s,currentLayer,'current'); }
   updateLandCover(); renderLegends();
-  status(`NUMERISCH · ${s.length.toLocaleString('de-DE')} validierte CMEMS-Strömungsvektoren · lokales Raster`);
+  status(`NUMERISCH · ${s.length.toLocaleString('de-DE')} validierte CMEMS-Strömungsvektoren · 13.09.2026 12:00 CEST`);
 }
 
-/* Critical wiring fix: app.js previously kept calling the browser CMEMS request and
-   therefore fell back to WMTS. Route only the current layer to the validated local grid.
-   All other vector layers keep their existing app.js behaviour. */
+/* Route only the current layer to the validated local grid. No WMTS fallback:
+   if the truth grid fails, the app must show no current field rather than a
+   visually plausible but unverified substitute. */
 const numericOriginalLoadVectors=loadVectors;
 loadVectors=async function(kind){
   if(kind!=='current')return numericOriginalLoadVectors(kind);
@@ -79,6 +92,6 @@ loadVectors=async function(kind){
     active.current=true; updateTimeline();
     if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
     updateLandCover(); renderLegends();
-    status('Strömungsraster nicht verfügbar · kein WMTS-Ersatzbild, damit keine Scheingenauigkeit entsteht.');
+    status(`Strömungsraster nicht verfügbar · ${e?.message||e} · kein WMTS-Ersatzbild.`);
   }
 };
