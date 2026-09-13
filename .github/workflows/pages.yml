@@ -39,7 +39,7 @@ jobs:
           rm -rf site/v6-test
           mkdir -p site/v6-test
           cp -a v6test/. site/v6-test/
-          echo "Files in v6-test (publish current-grid fix 6252):"
+          echo "Files in v6-test (publish coast-mask fix 6254):"
           find site/v6-test -maxdepth 2 -type f -print
 
       - name: Setup Pages
