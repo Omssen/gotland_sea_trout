@@ -14,7 +14,7 @@ jobs:
           sudo apt-get install -y -qq libeccodes-tools python3-pip
           pip install -q xarray cfgrib numpy h5netcdf
       - name: Download FCOO GETM Baltic current
-        run: wget -q https://data.fcoo.dk/webmap/v2/data/GRIB/GETM_current_1nm_baltic.grb2 -O /tmp/fcoo.grb2
+        run: wget -q https://data.fcoo.dk/webmap/v2/data/NETCDF/GRIB/GETM_current_1nm_baltic.grb2 -O /tmp/fcoo.grb2
       - name: Inspect and sample
         run: |
           python - <<'PY'
@@ -26,7 +26,6 @@ jobs:
           out=[]
           for i,ds in enumerate(sets):
             print('SET',i,'vars',list(ds.data_vars),'coords',list(ds.coords),'dims',dict(ds.sizes))
-            vars=list(ds.data_vars)
             uv=None
             for a,b in [('uo','vo'),('u','v')]:
               if a in ds and b in ds: uv=(a,b)
