@@ -32,7 +32,7 @@ async function gstDmiCurrentQuery(){
  const run=await gstPickRun(d);
  const q=new URLSearchParams({bbox:'17.65,56.65,19.95,58.15',crs:'crs84','parameter-name':'current-u,current-v',datetime:d.toISOString(),f:'GeoJSON'});
  const url=window.GST_DMI_CURRENT_URL+'/instances/'+encodeURIComponent(run.id)+'/cube?'+q.toString();
- const data=await json(url);data._gstRun=run.id;return data;
+ const data=await json(url);data._gstRun=run.id;data._gstTime=d.toISOString();return data;
 }
 function gstDmiPoint(ft){
  const c=ft&&ft.geometry&&ft.geometry.coordinates||[],p=ft&&ft.properties||{};
@@ -46,12 +46,23 @@ async function gstDmiGrid(){
  if(pts.length<100)throw Error('DMI-Raster unvollständig: '+pts.length+' Punkte');
  return {data,samples:prepareNumericGrid(pts)};
 }
+const GST_FID_COMPARE=[
+ ['W',56.98,17.98],['SW',56.86,18.05],['S',56.79,18.22],['SE',56.84,18.48],['E',56.98,18.55]
+];
+function gstCompass8(d){return ['N','NO','O','SO','S','SW','W','NW'][Math.round((((d%360)+360)%360)/45)%8]}
+function gstCompareText(samples){
+ return GST_FID_COMPARE.map(([name,lat,lon])=>{
+  const q=numericVector(lat,lon,samples);
+  return q?name+' '+Math.round(q.dir)+'° '+gstCompass8(q.dir):name+' –';
+ }).join(' · ');
+}
 showNumericCurrent=async function(){
  currentLayer.clearLayers();active.current=true;updateTimeline();if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
  status('Lade DMI HBM/HIROMB-Strömung…');
  const g=await gstDmiGrid(),s=g.samples;
  if(typeof drawNumericCurrent==='function')drawNumericCurrent(s,currentLayer);else{drawScalarBands(s,currentLayer,currentColor,true,'current');drawStaticVectors(s,currentLayer,'current')}
- updateLandCover();renderLegends();status('DMI DKSS/HBM · '+s.length.toLocaleString('de-DE')+' Vektoren · Lauf '+g.data._gstRun);
+ updateLandCover();renderLegends();
+ status('DMI DKSS/HBM · '+s.length.toLocaleString('de-DE')+' Vektoren · '+gstCompareText(s)+' · Lauf '+g.data._gstRun);
 };
 const gstDmiOtherVectors=numericOriginalLoadVectors;
 loadVectors=async function(kind){
