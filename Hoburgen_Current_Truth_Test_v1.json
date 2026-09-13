@@ -1,0 +1,96 @@
+{
+  "check": "Hoburgen Current Truth Test v1",
+  "location": {
+    "lat": 56.92,
+    "lon": 18.11
+  },
+  "source_meta": {
+    "source": "Copernicus Marine / SMHI",
+    "dataset_id": "cmems_mod_bal_phy_anfc_PT1H-i",
+    "requested_local_time": "2026-09-13T12:00:00+02:00",
+    "requested_utc_time": "2026-09-13T10:00:00+00:00",
+    "direction_convention": "TO direction; u>0 east, v>0 north",
+    "point_count": 10090
+  },
+  "nearest_cells": [
+    {
+      "distance_km": 0.951,
+      "lat": 56.9249,
+      "lon": 18.09718,
+      "u": 0.02791,
+      "v": -0.06972,
+      "speed": 0.0751,
+      "dir": 158.2
+    },
+    {
+      "distance_km": 1.06,
+      "lat": 56.9249,
+      "lon": 18.12495,
+      "u": 0.004,
+      "v": -0.0807,
+      "speed": 0.0808,
+      "dir": 177.2
+    },
+    {
+      "distance_km": 1.523,
+      "lat": 56.90824,
+      "lon": 18.09718,
+      "u": 0.03834,
+      "v": -0.07569,
+      "speed": 0.08484,
+      "dir": 153.1
+    },
+    {
+      "distance_km": 1.593,
+      "lat": 56.90824,
+      "lon": 18.12495,
+      "u": 0.01945,
+      "v": -0.10386,
+      "speed": 0.10566,
+      "dir": 169.4
+    },
+    {
+      "distance_km": 2.524,
+      "lat": 56.94157,
+      "lon": 18.09718,
+      "u": 0.02995,
+      "v": -0.06198,
+      "speed": 0.06884,
+      "dir": 154.2
+    },
+    {
+      "distance_km": 2.526,
+      "lat": 56.9249,
+      "lon": 18.0694,
+      "u": 0.07166,
+      "v": -0.06411,
+      "speed": 0.09615,
+      "dir": 131.8
+    },
+    {
+      "distance_km": 2.567,
+      "lat": 56.94157,
+      "lon": 18.12495,
+      "u": 0.00904,
+      "v": -0.06367,
+      "speed": 0.06431,
+      "dir": 171.9
+    },
+    {
+      "distance_km": 2.793,
+      "lat": 56.90824,
+      "lon": 18.0694,
+      "u": 0.07498,
+      "v": -0.05829,
+      "speed": 0.09497,
+      "dir": 127.9
+    }
+  ],
+  "idw8": {
+    "u_east_mps": 0.02504,
+    "v_north_mps": -0.07596,
+    "speed_mps": 0.07999,
+    "direction_to_deg": 161.8
+  },
+  "interpretation": "~0.08 m/s toward SSE; internally consistent across nearby model cells."
+}
