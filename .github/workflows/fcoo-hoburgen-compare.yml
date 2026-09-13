@@ -1,4 +1,4 @@
-name: DMI Hoburgen current comparison
+name: DMI Hoburgen surface-current comparison
 on:
   push:
     branches: [v6-test]
@@ -8,32 +8,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Query DMI DKSS Baltic current
+      - name: Query DMI DKSS surface current
         run: |
           python - <<'PY'
-          import json, math, urllib.parse, urllib.request
+          import json, urllib.parse, urllib.request
           base='https://opendataapi.dmi.dk/v1/forecastedr/collections/dkss_nsbs'
           pts=[('W',56.98,17.98),('SW',56.86,18.05),('S',56.79,18.22),('SE',56.84,18.48),('E',56.98,18.55)]
-          # Discover official parameter names first; do not guess them.
-          with urllib.request.urlopen(base, timeout=30) as r:
-            meta=json.load(r)
-          open('dmi-collection.json','w').write(json.dumps(meta,indent=2))
-          params=[]
-          for p in meta.get('parameter_names',{}): params.append(p)
-          if not params:
-            params=list((meta.get('parameter-names') or {}).keys())
-          print('PARAMETERS',params)
-          current=[p for p in params if any(k in p.lower() for k in ('current','velocity','sea-water'))]
-          print('CURRENT CANDIDATES',current)
-          if not current:
-            raise SystemExit('No current parameter names discovered in DKSS metadata')
-          # Prefer combined direction/speed if exposed; otherwise request all current candidates.
-          chosen=','.join(current)
+          params='current-u,current-v'
           out=[]
           for name,lat,lon in pts:
-            q=urllib.parse.urlencode({'coords':f'POINT({lon} {lat})','crs':'crs84','parameter-name':chosen,'f':'GeoJSON'})
+            q=urllib.parse.urlencode({'coords':f'POINT({lon} {lat})','crs':'crs84','parameter-name':params,'f':'GeoJSON'})
             url=base+'/position?'+q
-            with urllib.request.urlopen(url, timeout=30) as r:
+            print('QUERY',name,url)
+            with urllib.request.urlopen(url, timeout=60) as r:
               data=json.load(r)
             out.append({'point':name,'requested_lat':lat,'requested_lon':lon,'response':data})
           open('dmi-hoburgen.json','w').write(json.dumps(out,indent=2))
@@ -41,7 +28,5 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: dmi-hoburgen-comparison
-          path: |
-            dmi-collection.json
-            dmi-hoburgen.json
+          name: dmi-hoburgen-surface-current
+          path: dmi-hoburgen.json
