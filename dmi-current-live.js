@@ -17,3 +17,16 @@ async function gstDmiGrid(){
  if(pts.length<100)throw Error('DMI-Raster unvollständig: '+pts.length);
  return {data,samples:prepareNumericGrid(pts)};
 }
+showNumericCurrent=async function(){
+ currentLayer.clearLayers();active.current=true;updateTimeline();if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
+ status('Lade DMI HBM/HIROMB-Strömung…');
+ const g=await gstDmiGrid(),s=g.samples;
+ if(typeof drawNumericCurrent==='function')drawNumericCurrent(s,currentLayer);else{drawScalarBands(s,currentLayer,currentColor,true,'current');drawStaticVectors(s,currentLayer,'current')}
+ updateLandCover();renderLegends();
+ status('DMI DKSS/HBM · '+s.length.toLocaleString('de-DE')+' Strömungsvektoren');
+};
+const gstDmiOtherVectors=numericOriginalLoadVectors;
+loadVectors=async function(kind){
+ if(kind!=='current')return gstDmiOtherVectors(kind);
+ try{await showNumericCurrent()}catch(e){console.error(e);currentLayer.clearLayers();active.current=true;updateTimeline();if(!map.hasLayer(currentLayer))currentLayer.addTo(map);updateLandCover();renderLegends();status('DMI-Strömung nicht verfügbar · '+(e?.message||e))}
+};
