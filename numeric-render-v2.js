@@ -4,7 +4,6 @@
 (function(){
   const RAW=numericVector;
   const MAX_TINY_FILL_KM=1.15;
-  let lastSamples=null,lastLayer=null,redrawTimer=null;
 
   function nearWet(lat,lon,samples){
     const direct=RAW(lat,lon,samples); if(direct){direct.quality='raw';return direct;}
@@ -55,22 +54,13 @@
     const s=Math.min(1,q.v/.45),len=13+s*7,head=4+s*1.5,op=q.quality==='raw'?.84:.45;
     return L.divIcon({className:'currentGlyph',html:`<svg width="${len+5}" height="14" viewBox="0 0 ${len+5} 14" style="transform:rotate(${q.dir-90}deg);overflow:visible"><path d="M2 7 H${len} M${len-head} ${7-head*.62} L${len} 7 L${len-head} ${7+head*.62}" fill="none" stroke="rgba(20,45,52,${op})" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`,iconSize:[len+5,14],iconAnchor:[(len+5)/2,7]});
   }
-  function paint(samples,layer){
+  drawNumericCurrent=function(samples,layer){
     numericSmoothCurrentLayer(samples).addTo(layer);
     for(const ll of seeds()){
       const q=nearWet(ll.lat,ll.lng,samples);if(!q)continue;
       L.marker([ll.lat,ll.lng],{pane:'currentVectorPane',icon:symbol(q),keyboard:false,interactive:false}).addTo(layer);
     }
-  }
-  drawNumericCurrent=function(samples,layer){
-    lastSamples=samples;lastLayer=layer;paint(samples,layer);
   };
-  function scheduleRedraw(){
-    if(!lastSamples||!lastLayer||!active?.current||!map.hasLayer(currentLayer))return;
-    clearTimeout(redrawTimer);
-    redrawTimer=setTimeout(()=>{if(!active?.current||!map.hasLayer(currentLayer))return;lastLayer.clearLayers();paint(lastSamples,lastLayer);updateLandCover();renderLegends();},80);
-  }
-  map.on('zoomend moveend resize',scheduleRedraw);
 
   const oldShow=showNumericCurrent;
   showNumericCurrent=async function(){await oldShow();status('NUMERISCH · Rohdaten + kompakte Richtungssymbole · Punkte = sehr schwache Strömung · No-Data nicht extrapoliert');};
