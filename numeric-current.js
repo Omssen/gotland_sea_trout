@@ -35,7 +35,7 @@ function numericVector(lat,lon,samples){
 }
 async function loadNumericGridFile(){
   if(numericGridCache)return numericGridCache;
-  const response=await fetch('data/current/latest.json?v=6240');
+  const response=await fetch('data/current/latest.json?v=6251',{cache:'no-store'});
   if(!response.ok)throw Error('Grid HTTP '+response.status);
   const data=await response.json();
   const samples=prepareNumericGrid((data.points||[]).map(p=>{
@@ -53,12 +53,32 @@ idwVector=(lat,lon,s)=>s?.numericGrid?numericVector(lat,lon,s):numericOldIdw(lat
 async function showNumericCurrent(){
   currentLayer.clearLayers(); active.current=true; updateTimeline();
   if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
-  status('Lade numerisches Copernicus/SMHI-Grid…');
+  status('Lade validiertes Copernicus/SMHI-Grid…');
   const g=await loadNumericGridFile(), s=g.samples;
   const chosen=timelineHours[timelineIndex]||new Date(), have=new Date(g.data.requested_utc_time);
-  if(Math.abs(chosen-have)>31*60000)throw Error('Referenz-Grid gilt für 13.09.2026 12:00 CEST');
-  drawScalarBands(s,currentLayer,currentColor,true,'current');
-  drawStaticVectors(s,currentLayer,'current');
+  if(Number.isFinite(have.getTime())&&Math.abs(chosen-have)>31*60000){
+    throw Error('Referenz-Grid gilt für 13.09.2026 12:00 CEST');
+  }
+  if(typeof drawNumericCurrent==='function') drawNumericCurrent(s,currentLayer);
+  else { drawScalarBands(s,currentLayer,currentColor,true,'current'); drawStaticVectors(s,currentLayer,'current'); }
   updateLandCover(); renderLegends();
-  status(`NUMERISCH · ${s.length.toLocaleString('de-DE')} CMEMS Strömungsvektoren · Modellraster ~2 km`);
+  status(`NUMERISCH · ${s.length.toLocaleString('de-DE')} validierte CMEMS-Strömungsvektoren · lokales Raster`);
 }
+
+/* Critical wiring fix: app.js previously kept calling the browser CMEMS request and
+   therefore fell back to WMTS. Route only the current layer to the validated local grid.
+   All other vector layers keep their existing app.js behaviour. */
+const numericOriginalLoadVectors=loadVectors;
+loadVectors=async function(kind){
+  if(kind!=='current')return numericOriginalLoadVectors(kind);
+  try{
+    await showNumericCurrent();
+  }catch(e){
+    console.error('Validiertes Current-Grid konnte nicht geladen werden:',e);
+    currentLayer.clearLayers();
+    active.current=true; updateTimeline();
+    if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
+    updateLandCover(); renderLegends();
+    status('Strömungsraster nicht verfügbar · kein WMTS-Ersatzbild, damit keine Scheingenauigkeit entsteht.');
+  }
+};
