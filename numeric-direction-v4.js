@@ -1,6 +1,6 @@
 /* v6.2.4k SMOOTH FIELD + explicit compass arrows
    Performance patch: adaptive low-res field, lighter blur, fewer vector samples,
-   no off-screen tile buffer. Numeric CMEMS values and directions are unchanged.
+   no off-screen tile buffer. Current vectors use TO bearings from u/v.
    Coast fix: final canvas output is hard-clipped to closed OSM land polygons. */
 (function(){
   function smoothRgb(v){const s=[[0,[239,248,240]],[.05,[220,240,216]],[.10,[195,229,188]],[.16,[157,211,148]],[.23,[112,191,116]],[.31,[176,207,96]],[.40,[225,216,83]],[.50,[240,193,73]],[.62,[241,151,65]],[.75,[225,95,57]]];if(v<=0)return s[0][1];for(let i=1;i<s.length;i++)if(v<=s[i][0]){const t=(v-s[i-1][0])/(s[i][0]-s[i-1][0]);return s[i-1][1].map((a,j)=>Math.round(a+(s[i][1][j]-a)*t))}return s[s.length-1][1]}
@@ -37,5 +37,5 @@
     return new V({pane:'currentVectorPane',tileSize:256,opacity:1,updateWhenIdle:true,updateWhenZooming:false,keepBuffer:0,noWrap:true,bounds:[[GOTLAND_RENDER_DOMAIN.s,GOTLAND_RENDER_DOMAIN.w],[GOTLAND_RENDER_DOMAIN.n,GOTLAND_RENDER_DOMAIN.e]]})
   }
   drawNumericCurrent=function(samples,layer){numericSmoothCurrentLayer(samples).addTo(layer);vectors(samples).addTo(layer)};
-  const oldShow=showNumericCurrent;showNumericCurrent=async function(){await oldShow();status('NUMERISCH · CURRENT GRID · OSM-Küstenmaske · CMEMS-Werte/Pfeilrichtungen unverändert')};
+  const oldShow=showNumericCurrent;showNumericCurrent=async function(){await oldShow();status('NUMERISCH · DMI DKSS/HBM · LIVE/FORECAST · OSM-Küstenmaske')};
 })();
