@@ -1,20 +1,10 @@
 /* Gotland Sea Trout v6.2.4 numeric current test */
 let numericGridCache=null;
-function prepareNumericGrid(samples){
- const ys=[...new Set(samples.map(p=>p.lat))].sort((a,b)=>a-b),xs=[...new Set(samples.map(p=>p.lon))].sort((a,b)=>a-b);
- const yi=new Map(ys.map((v,i)=>[v,i])),xi=new Map(xs.map((v,i)=>[v,i])),cols=xs.length;
- const uu=new Float32Array(ys.length*cols),nn=new Float32Array(ys.length*cols);uu.fill(NaN);nn.fill(NaN);
- for(const p of samples){const k=yi.get(p.lat)*cols+xi.get(p.lon);uu[k]=p.u;nn[k]=p.n}
- samples.numericGrid={ys,xs,cols,uu,nn};
- return samples;
-}
-async function loadNumericGridFile(){
- if(numericGridCache)return numericGridCache;
- const response=await fetch('data/current/latest.json?v=6240');
- if(!response.ok)throw Error('Grid HTTP '+response.status);
- const data=await response.json();
- const samples=prepareNumericGrid((data.points||[]).map(p=>{const u=+p.u,n=+p.v,x=vdFrom(u,n);return{lat:+p.lat,lon:+p.lon,u,n,v:x.v,dir:x.dir}}).filter(p=>Number.isFinite(p.u)&&Number.isFinite(p.n)));
- if(samples.length<1000)throw Error('Grid unvollständig: '+samples.length);
- numericGridCache={data,samples};return numericGridCache;
-}
+function prepareNumericGrid(samples){const ys=[...new Set(samples.map(p=>p.lat))].sort((a,b)=>a-b),xs=[...new Set(samples.map(p=>p.lon))].sort((a,b)=>a-b),yi=new Map(ys.map((v,i)=>[v,i])),xi=new Map(xs.map((v,i)=>[v,i])),cols=xs.length,uu=new Float32Array(ys.length*cols),nn=new Float32Array(ys.length*cols);uu.fill(NaN);nn.fill(NaN);for(const p of samples){const k=yi.get(p.lat)*cols+xi.get(p.lon);uu[k]=p.u;nn[k]=p.n}samples.numericGrid={ys,xs,cols,uu,nn};return samples}
+function numericBracket(a,x){if(!a.length||x<a[0]||x>a[a.length-1])return null;let l=0,h=a.length-1;while(h-l>1){let m=(l+h)>>1;if(a[m]<=x)l=m;else h=m}if(x===a[h])return[h,h,0];return[l,h,(x-a[l])/(a[h]-a[l]||1)]}
+function numericVector(lat,lon,samples){const g=samples?.numericGrid,by=g&&numericBracket(g.ys,lat),bx=g&&numericBracket(g.xs,lon);if(!by||!bx)return null;const[i0,i1,ty]=by,[j0,j1,tx]=bx,cells=[[i0,j0,(1-tx)*(1-ty)],[i0,j1,tx*(1-ty)],[i1,j0,(1-tx)*ty],[i1,j1,tx*ty]];let su=0,sn=0,sw=0;for(const[i,j,w]of cells){let k=i*g.cols+j,u=g.uu[k],n=g.nn[k];if(Number.isFinite(u)&&Number.isFinite(n)){su+=u*w;sn+=n*w;sw+=w}}return sw?vdFrom(su/sw,sn/sw):null}
+async function loadNumericGridFile(){if(numericGridCache)return numericGridCache;const response=await fetch('data/current/latest.json?v=6240');if(!response.ok)throw Error('Grid HTTP '+response.status);const data=await response.json(),samples=prepareNumericGrid((data.points||[]).map(p=>{const u=+p.u,n=+p.v,x=vdFrom(u,n);return{lat:+p.lat,lon:+p.lon,u,n,v:x.v,dir:x.dir}}).filter(p=>Number.isFinite(p.u)&&Number.isFinite(p.n)));if(samples.length<1000)throw Error('Grid unvollständig: '+samples.length);numericGridCache={data,samples};return numericGridCache}
+const numericOldNearest=nearestVectorFast,numericOldIdw=idwVector;
+nearestVectorFast=(lat,lon,s)=>s?.numericGrid?numericVector(lat,lon,s):numericOldNearest(lat,lon,s);
+idwVector=(lat,lon,s)=>s?.numericGrid?numericVector(lat,lon,s):numericOldIdw(lat,lon,s);
 console.info('v6.2.4 numeric current module loaded');
