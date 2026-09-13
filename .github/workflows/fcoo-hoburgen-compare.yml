@@ -1,0 +1,58 @@
+name: FCOO Hoburgen current comparison
+on:
+  push:
+    branches: [v6-test]
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GRIB tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libeccodes-tools python3-pip
+          pip install -q xarray cfgrib numpy h5netcdf
+      - name: Download FCOO GETM Baltic current
+        run: wget -q https://data.fcoo.dk/webmap/v2/data/GRIB/GETM_current_1nm_baltic.grb2 -O /tmp/fcoo.grb2
+      - name: Inspect and sample
+        run: |
+          python - <<'PY'
+          import cfgrib, numpy as np, math, json
+          target=np.datetime64('2026-09-13T10:00:00')
+          pts=[('W',56.98,17.98),('SW',56.86,18.05),('S',56.79,18.22),('SE',56.84,18.48),('E',56.98,18.55)]
+          sets=cfgrib.open_datasets('/tmp/fcoo.grb2',backend_kwargs={'indexpath':''})
+          print('datasets',len(sets))
+          out=[]
+          for i,ds in enumerate(sets):
+            print('SET',i,'vars',list(ds.data_vars),'coords',list(ds.coords),'dims',dict(ds.sizes))
+            vars=list(ds.data_vars)
+            uv=None
+            for a,b in [('uo','vo'),('u','v')]:
+              if a in ds and b in ds: uv=(a,b)
+            if not uv: continue
+            u,v=ds[uv[0]],ds[uv[1]]
+            if 'valid_time' in u.coords:
+              vt=np.asarray(u.valid_time.values).reshape(-1); k=int(np.argmin(abs(vt-target)))
+              if 'step' in u.dims: u=u.isel(step=k); v=v.isel(step=k)
+              elif 'time' in u.dims: u=u.isel(time=k); v=v.isel(time=k)
+              chosen=str(vt[k])
+            else: chosen='unknown'
+            u=u.squeeze(); v=v.squeeze()
+            if 'latitude' not in u.coords or 'longitude' not in u.coords: continue
+            la=np.asarray(u.latitude); lo=np.asarray(u.longitude); ua=np.asarray(u); va=np.asarray(v)
+            while ua.ndim>2: ua=ua[0]; va=va[0]
+            for name,y,x in pts:
+              d=(la-y)**2+((lo-x)*math.cos(math.radians(y)))**2
+              d=np.where(np.isfinite(ua)&np.isfinite(va),d,np.inf)
+              iy,ix=np.unravel_index(np.argmin(d),d.shape)
+              U=float(ua[iy,ix]); V=float(va[iy,ix]); sp=math.hypot(U,V); dr=(math.degrees(math.atan2(U,V))+360)%360
+              out.append(dict(point=name,time=chosen,lat=float(la[iy,ix]),lon=float(lo[iy,ix]),u=U,v=V,speed=sp,direction_to=dr))
+            break
+          open('fcoo-hoburgen.json','w').write(json.dumps(out,indent=2))
+          print(json.dumps(out,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fcoo-hoburgen-comparison
+          path: fcoo-hoburgen.json
