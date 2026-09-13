@@ -20,19 +20,9 @@ async function gstLoadRuns(){
  if(!gstRuns.length)throw Error('DMI-Modellläufe nicht gefunden');
  return gstRuns;
 }
-async function gstPickRun(target){
- const runs=await gstLoadRuns();
- const limit=Math.min(target.getTime(),Date.now());
- let pick=runs[0];
- for(const r of runs)if(r.date.getTime()<=limit)pick=r;
- return pick;
-}
-async function gstDmiCurrentQuery(){
- const d=new Date(timelineHours[timelineIndex]||Date.now());d.setMinutes(0,0,0);
- const run=await gstPickRun(d);
- const q=new URLSearchParams({bbox:'17.65,56.65,19.95,58.15',crs:'crs84','parameter-name':'current-u,current-v',datetime:d.toISOString(),f:'GeoJSON'});
- const url=window.GST_DMI_CURRENT_URL+'/instances/'+encodeURIComponent(run.id)+'/cube?'+q.toString();
- const data=await json(url);data._gstRun=run.id;data._gstTime=d.toISOString();return data;
+async function gstCandidateRuns(target){
+ const runs=await gstLoadRuns(),limit=Math.min(target.getTime(),Date.now());
+ return runs.filter(r=>r.date.getTime()<=limit).sort((a,b)=>b.date-a.date);
 }
 function gstDmiPoint(ft){
  const c=ft&&ft.geometry&&ft.geometry.coordinates||[],p=ft&&ft.properties||{};
@@ -40,29 +30,39 @@ function gstDmiPoint(ft){
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||!Number.isFinite(u)||!Number.isFinite(n))return null;
  const x=vdFrom(u,n);return {lat,lon,u,n,v:x.v,dir:x.dir,step:p.step||null};
 }
-async function gstDmiGrid(){
- const data=await gstDmiCurrentQuery();
+async function gstFetchRun(run,target){
+ const q=new URLSearchParams({bbox:'17.65,56.65,19.95,58.15',crs:'crs84','parameter-name':'current-u,current-v',datetime:target.toISOString(),f:'GeoJSON'});
+ const url=window.GST_DMI_CURRENT_URL+'/instances/'+encodeURIComponent(run.id)+'/cube?'+q.toString();
+ const r=await fetch(url,{cache:'no-store'});
+ if(!r.ok)throw Error('HTTP '+r.status);
+ const data=await r.json();
  const pts=(data.features||[]).map(gstDmiPoint).filter(Boolean);
- if(pts.length<100)throw Error('DMI-Raster unvollständig: '+pts.length+' Punkte');
- return {data,samples:prepareNumericGrid(pts)};
+ if(pts.length<100)throw Error('nur '+pts.length+' gültige Punkte');
+ data._gstRun=run.id;data._gstTime=target.toISOString();return {data,pts};
 }
-const GST_FID_COMPARE=[
- ['W',56.98,17.98],['SW',56.86,18.05],['S',56.79,18.22],['SE',56.84,18.48],['E',56.98,18.55]
-];
+async function gstDmiCurrentQuery(){
+ const d=new Date(timelineHours[timelineIndex]||Date.now());d.setMinutes(0,0,0);
+ const candidates=await gstCandidateRuns(d);
+ if(!candidates.length)throw Error('Kein DMI-Lauf vor Kartenzeit');
+ const errors=[];
+ for(const run of candidates.slice(0,4)){
+  try{return await gstFetchRun(run,d)}catch(e){errors.push(run.id+': '+(e&&e.message||e))}
+ }
+ throw Error('Kein vollständiger DMI-Lauf · '+errors.join(' | '));
+}
+async function gstDmiGrid(){
+ const q=await gstDmiCurrentQuery();
+ return {data:q.data,samples:prepareNumericGrid(q.pts)};
+}
+const GST_FID_COMPARE=[['W',56.98,17.98],['SW',56.86,18.05],['S',56.79,18.22],['SE',56.84,18.48],['E',56.98,18.55]];
 function gstCompass8(d){return ['N','NO','O','SO','S','SW','W','NW'][Math.round((((d%360)+360)%360)/45)%8]}
-function gstCompareText(samples){
- return GST_FID_COMPARE.map(([name,lat,lon])=>{
-  const q=numericVector(lat,lon,samples);
-  return q?name+' '+Math.round(q.dir)+'° '+gstCompass8(q.dir):name+' –';
- }).join(' · ');
-}
+function gstCompareText(samples){return GST_FID_COMPARE.map(([name,lat,lon])=>{const q=numericVector(lat,lon,samples);return q?name+' '+Math.round(q.dir)+'° '+gstCompass8(q.dir):name+' –'}).join(' · ')}
 showNumericCurrent=async function(){
  currentLayer.clearLayers();active.current=true;updateTimeline();if(!map.hasLayer(currentLayer))currentLayer.addTo(map);
  status('Lade DMI HBM/HIROMB-Strömung…');
  const g=await gstDmiGrid(),s=g.samples;
  if(typeof drawNumericCurrent==='function')drawNumericCurrent(s,currentLayer);else{drawScalarBands(s,currentLayer,currentColor,true,'current');drawStaticVectors(s,currentLayer,'current')}
- updateLandCover();renderLegends();
- status('DMI DKSS/HBM · '+s.length.toLocaleString('de-DE')+' Vektoren · '+gstCompareText(s)+' · Lauf '+g.data._gstRun);
+ updateLandCover();renderLegends();status('DMI DKSS/HBM · '+s.length.toLocaleString('de-DE')+' Vektoren · '+gstCompareText(s)+' · Lauf '+g.data._gstRun);
 };
 const gstDmiOtherVectors=numericOriginalLoadVectors;
 loadVectors=async function(kind){
