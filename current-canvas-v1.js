@@ -1,0 +1,11 @@
+/* Single persistent canvas renderer: no current GridLayer tiles. */
+(function(){
+ let samples=null,canvas=null,timer=null;
+ const col=v=>v<.08?[199,233,194]:v<.2?[126,199,125]:v<.38?[215,211,82]:v<.65?[241,190,69]:[210,62,48];
+ function vec(lat,lon){const q=numericVector(lat,lon,samples);if(!q||isLandCoast(lat,lon))return null;return q}
+ function arrow(c,x,y,q){if(q.v<.018){c.beginPath();c.arc(x,y,2,0,7);c.fillStyle='rgba(20,45,52,.72)';c.fill();return}const r=q.dir*Math.PI/180,dx=Math.sin(r),dy=-Math.cos(r),L=16,H=5,x1=x-dx*L/2,y1=y-dy*L/2,x2=x+dx*L/2,y2=y+dy*L/2,px=-dy,py=dx;c.strokeStyle='rgba(20,45,52,.84)';c.lineWidth=2;c.lineCap='round';c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.moveTo(x2-dx*H+px*3,y2-dy*H+py*3);c.lineTo(x2,y2);c.lineTo(x2-dx*H-px*3,y2-dy*H-py*3);c.stroke()}
+ function draw(){if(!canvas||!samples)return;const s=map.getSize(),w=s.x,h=s.y,d=Math.min(1.5,devicePixelRatio||1);canvas.width=w*d;canvas.height=h*d;canvas.style.width=w+'px';canvas.style.height=h+'px';L.DomUtil.setPosition(canvas,map.containerPointToLayerPoint([0,0]));const c=canvas.getContext('2d');c.setTransform(d,0,0,d,0,0);c.clearRect(0,0,w,h);const step=map.getZoom()>=12?10:16;for(let y=0;y<h;y+=step)for(let x=0;x<w;x+=step){const ll=map.containerPointToLatLng([x+step/2,y+step/2]);if(!insideRenderDomain(ll.lat,ll.lng)||isLandCoast(ll.lat,ll.lng))continue;const q=vec(ll.lat,ll.lng);if(!q)continue;const a=col(q.v);c.fillStyle=`rgba(${a[0]},${a[1]},${a[2]},.42)`;c.fillRect(x,y,step+1,step+1)}const gap=map.getZoom()>=12?68:96;for(let y=gap/2;y<h;y+=gap)for(let x=gap/2;x<w;x+=gap){const ll=map.containerPointToLatLng([x,y]);if(!insideRenderDomain(ll.lat,ll.lng)||isLandCoast(ll.lat,ll.lng))continue;const q=vec(ll.lat,ll.lng);if(q)arrow(c,x,y,q)}}
+ function schedule(){clearTimeout(timer);timer=setTimeout(draw,120)}
+ const Layer=L.Layer.extend({onAdd(){canvas=L.DomUtil.create('canvas','gstCurrentCanvas');canvas.style.position='absolute';canvas.style.pointerEvents='none';map.getPane('currentVectorPane').appendChild(canvas);map.on('moveend zoomend resize',schedule);draw()},onRemove(){map.off('moveend zoomend resize',schedule);clearTimeout(timer);canvas?.remove();canvas=null}});
+ drawNumericCurrent=function(s,layer){samples=s;new Layer().addTo(layer)};
+})();
