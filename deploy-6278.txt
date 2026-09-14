@@ -1,0 +1,1 @@
+Publish v6-test current renderer refinement: sharper discrete speed bands, no fill below 0.05 m/s, raw-direction arrows unchanged.
