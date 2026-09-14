@@ -1,0 +1,1 @@
+Publish v6-test build 6273: persistent DMI cache, idle prefetch, shared in-flight request, FiD-style renderer unchanged.
