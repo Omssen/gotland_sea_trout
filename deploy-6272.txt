@@ -1,0 +1,1 @@
+Publish v6-test build 6272: discrete current speed classes, denser shorter raw DMI arrows; preserve verified direction logic.
