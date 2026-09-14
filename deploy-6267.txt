@@ -1,0 +1,1 @@
+Deploy v6-test build 6267: smoother single-canvas current field; visible build number.
