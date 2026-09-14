@@ -1,0 +1,1 @@
+Publish active v6-test current renderer with opaque hard speed bands and no fill below 0.05 m/s.
