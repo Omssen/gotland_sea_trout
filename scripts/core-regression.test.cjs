@@ -5,13 +5,14 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../app.js'),'utf8');
-const names=['json','timelineTime','hourlyQuery','hourlyIndex','chunks','batchResults','normalizeMarine','marineJson','currentKnots','live','marineBatch','weatherBatch','fallbackSamples','fetchWindSamples','fetchTempSamples','fetchSeaLevelSamples','fetchWaveSamples','refreshConditionStrip','uvFrom','vdFrom','flattenNumeric','componentFrom','parseCurrentFeature','score','scoreDetailed','angleDiff'];
+const names=['json','timelineTime','hourlyQuery','hourlyIndex','chunks','batchResults','normalizeMarine','marineJson','currentKnots','live','marineBatch','weatherBatch','fallbackSamples','fetchWindSamples','fetchTempSamples','fetchSeaLevelSamples','fetchWaveSamples','refreshConditionStrip','uvFrom','vdFrom','componentFrom','parseCurrentFeature','score','scoreDetailed','angleDiff','inPoly','featureContainsPoint','pointInProtection','compass','exposure','editCustom'];
 function setup(){
   const now=Date.parse('2026-09-15T12:00:00Z');
   const points=Array.from({length:151},(_,i)=>({lat:57+i/1000,lon:18}));
   const context={Date,console:{warn(){}},URL,Map,timelineIndex:24,timelineHours:Array.from({length:49},(_,i)=>new Date(now+(i-24)*3600000)),currentSourcePoints:()=>points, fallbackProbePoints:()=>points.slice(0,3),viewCacheKey:()=> 'test',windCache:new Map(),tempCache:new Map(),levelCache:new Map(),waveCache:new Map()};
   vm.createContext(context);
   for(const name of names){const line=source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')||l.startsWith('async function '+name+'('));assert.ok(line,name);vm.runInContext(line,context)}
+  vm.runInContext(source.slice(source.indexOf('async function openSpot('),source.indexOf('\nfunction renderSpots(')),context);
   return {c:context,points,now};
 }
 function response(c,value=1){return {hourly:{time:c.timelineHours.map(t=>+t/1000),wind_speed_10m:Array(49).fill(value),wind_direction_10m:Array(49).fill(90),sea_surface_temperature:Array(49).fill(value),wave_height:Array(49).fill(value),sea_level_height_msl:Array(49).fill(value)}}}
@@ -124,4 +125,70 @@ test('spot score and ranking share unchanged m/s threshold boundaries and knot d
   }
   assert.equal(c.scoreDetailed(null,null,spot,{v:.5,edge:.0599}).score,56);assert.equal(c.scoreDetailed(null,null,spot,{v:.5,edge:.06}).score,68);
   assert.equal(c.currentKnots(.5),.97);assert.equal(c.currentKnots(0),0);assert.equal(c.currentKnots(null),'–');
+});
+test('current parser rejects unrelated field names and substring matches',()=>{
+  const {c}=setup();
+  for(const data of [{quote:3,volume:4},{metadata:{quote:3,volume:4}},{uo_quality:3,vo_error:4},{eastward_error:3,northward_error:4},{'foreign.uo':3,'foreign.vo':4},{uo:{quote:3},vo:{volume:4}}])assert.equal(c.parseCurrentFeature(data),null,JSON.stringify(data));
+  const parsed=c.parseCurrentFeature({quote:99,volume:88,properties:{uo:0,vo:-.4}});assert.equal(parsed.u,0);assert.equal(parsed.n,-.4);
+});
+test('current parser accepts exact names and the observed Copernicus WMTS component metadata',()=>{
+  const {c}=setup();
+  // Observed GetFeatureInfo response, 2026-09-14T22:15:00Z, Hoburgen west.
+  const real={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Point',coordinates:[56.97476686327146,17.986198765712146]},properties:{lat:56.97476686327146,lon:17.986198765712146,variableId:'sea_water_velocity',datasetId:'BALTICSEA_ANALYSISFORECAST_PHY_003_006/cmems_mod_bal_phy_anfc_PT15M-i_202411',value:.05100088107520634,units:'m s-1',component1VariableId:'uo',component1Value:-.04065295308828354,component1Units:'m s-1',component2VariableId:'vo',component2Value:.03079654648900032,component2Units:'m s-1'}}]};
+  const parsed=c.parseCurrentFeature(real);assert.ok(parsed);assert.equal(parsed.u,-.04065295308828354);assert.equal(parsed.n,.03079654648900032);assert.ok(Math.abs(parsed.v-Math.hypot(parsed.u,parsed.n))<1e-12);
+  for(const data of [{uo:.3,vo:.4},{features:[{properties:{uo:'0.3',vo:'0.4'}}]},{eastward_sea_water_velocity:.3,northward_sea_water_velocity:.4},{u:.3,v:.4}])assert.equal(c.parseCurrentFeature(data)?.v,.5);
+  assert.equal(c.parseCurrentFeature({component1VariableId:'quote',component1Value:.3,component2VariableId:'volume',component2Value:.4}),null);
+  assert.equal(c.parseCurrentFeature({component1VariableId:'foreign.uo',component1Value:.3,component2VariableId:'foreign.vo',component2Value:.4}),null);
+  assert.equal(c.parseCurrentFeature({uo:0,vo:0})?.v,0);assert.equal(c.parseCurrentFeature({uo:null,vo:.4}),null);
+});
+test('protection polygons exclude holes, including each member of a MultiPolygon',()=>{
+  const {c}=setup(),outer=[[10,50],[20,50],[20,60],[10,60],[10,50]],hole=[[12,52],[14,52],[14,54],[12,54],[12,52]],secondHole=[[16,56],[18,56],[18,58],[16,58],[16,56]],island=[[30,50],[40,50],[40,60],[30,60],[30,50]];
+  const polygon={geometry:{type:'Polygon',coordinates:[outer,hole,secondHole]}};
+  assert.equal(c.featureContainsPoint(polygon,53,13),false);assert.equal(c.featureContainsPoint(polygon,57,17),false);assert.equal(c.featureContainsPoint(polygon,51,11),true);assert.equal(c.featureContainsPoint(polygon,49,11),false);
+  const multi={geometry:{type:'MultiPolygon',coordinates:[[outer,hole],[island]]}};
+  assert.equal(c.featureContainsPoint(multi,53,13),false);assert.equal(c.featureContainsPoint(multi,55,35),true);
+  const reversed={geometry:{type:'Polygon',coordinates:[outer.slice().reverse(),hole.slice().reverse()]}};assert.equal(c.featureContainsPoint(reversed,53,13),false);
+  c.officialProtectionFeatures=[multi];assert.equal(c.pointInProtection(53,13),false);assert.equal(c.pointInProtection(55,35),true);
+  assert.equal(c.featureContainsPoint({geometry:null},53,13),false);assert.equal(c.featureContainsPoint({geometry:{type:'Polygon',coordinates:[]}},53,13),false);
+});
+test('spot details preserve north 0 degrees for scoring and wind exposure',async()=>{
+  const {c}=setup(),elements={};c.$=id=>elements[id]??={};c.map={setView(){}};c.favs=new Set();c.customSpots=[];c.openSheet=()=>{};c.satCenters=()=>[];c.setTimeout=()=>{};
+  c.live=async()=>({w:{current:{wind_direction_10m:0}},m:{current:{}}});
+  const spot={id:1,name:'North',lat:57,lon:18,rating:3,facing:0};await c.openSpot(spot);
+  assert.match(elements['#spotLive'].innerHTML,/<b>52\/100<\/b>/);assert.match(elements['#spotLive'].innerHTML,/N · auflandig/);
+  delete spot.facing;await c.openSpot(spot);assert.match(elements['#spotLive'].innerHTML,/<b>43\/100<\/b>/);assert.match(elements['#spotLive'].innerHTML,/N · seitlich/);
+});
+function formHarness(c,spot){
+  let html='',saved=0;const form={};c.openSheet=value=>{html=value};c.$=id=>{assert.equal(id,'#cf');return form};c.saveCustom=()=>saved++;c.renderCustom=()=>{};c.openSpot=()=>{};
+  // Read the generated option selection as a browser would; submit these unchanged values.
+  function selected(name){const options=html.match(new RegExp('<select name="'+name+'">([\\s\\S]*?)</select>'))[1];const matches=Array.from(options.matchAll(/<option\b([^>]*)>([^<]*)<\/option>/g));const option=matches.find(m=>/\bselected\b/.test(m[1]))||matches[0];return option[1].match(/value="([^"]*)"/)?.[1]??option[2]}
+  c.FormData=class{get(name){return name==='rating'||name==='facing'?selected(name):spot[name]||''}};
+  c.editCustom(spot);return {selected,submit(){form.onsubmit({preventDefault(){},target:form});assert.equal(saved,1)}};
+}
+test('editing a custom spot preserves its actual rating and direction on unchanged submit',()=>{
+  for(const rating of [1,2,3,4,5])for(const facing of [0,45,90,135,180,225,270,315,37]){
+    const {c}=setup(),spot={name:'Own',note:'unchanged',rating,facing},form=formHarness(c,spot);
+    assert.equal(+form.selected('rating'),rating);assert.equal(+form.selected('facing'),facing);form.submit();assert.equal(spot.rating,rating);assert.equal(spot.facing,facing);
+  }
+});
+test('new custom spots keep defaults and an already generated coast direction',()=>{
+  for(const facing of [undefined,45,0]){const {c}=setup(),spot={name:'New',...(facing==null?{}:{rating:3,facing})},form=formHarness(c,spot);form.submit();assert.equal(spot.rating,3);assert.equal(spot.facing,facing??270)}
+});
+test('explicit current pairs take priority over preceding generic metadata',()=>{
+  const {c}=setup();
+  for(const properties of [{uo:.03,vo:.04},{component1VariableId:'uo',component1Value:.03,component2VariableId:'vo',component2Value:.04}]){
+    const result=c.parseCurrentFeature({metadata:{u:3,v:4},features:[{properties}]});
+    assert.ok(result);assert.equal(result.u,.03);assert.equal(result.n,.04);assert.equal(result.v,.05);
+  }
+});
+test('current pairs never combine incomplete components across objects or features',()=>{
+  const {c}=setup();
+  for(const data of [
+    {features:[{properties:{uo:null,vo:.4}},{properties:{uo:.3,vo:null}}]},
+    {first:{uo:.3},second:{vo:.4}},
+    {uo:.3,child:{vo:.4}},
+    {first:{u:.3},second:{v:.4}},
+    {features:[{properties:{component1VariableId:'uo',component1Value:.3}},{properties:{component2VariableId:'vo',component2Value:.4}}]}
+  ])assert.equal(c.parseCurrentFeature(data),null,JSON.stringify(data));
+  const result=c.parseCurrentFeature({first:{uo:.3},second:{uo:0,vo:.4}});assert.equal(result.u,0);assert.equal(result.n,.4);assert.equal(result.v,.4);
 });
