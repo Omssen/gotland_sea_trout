@@ -5,11 +5,11 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../app.js'),'utf8');
-const names=['json','timelineTime','hourlyQuery','hourlyIndex','chunks','batchResults','normalizeMarine','marineJson','currentKnots','live','marineBatch','weatherBatch','fallbackSamples','fetchWindSamples','fetchTempSamples','fetchSeaLevelSamples','fetchWaveSamples','refreshConditionStrip','uvFrom','vdFrom','componentFrom','parseCurrentFeature','score','scoreDetailed','angleDiff','inPoly','featureContainsPoint','pointInProtection','compass','exposure','editCustom'];
+const names=['requestGuard','invalidateRequest','json','timelineTime','hourlyQuery','hourlyIndex','chunks','batchResults','normalizeMarine','marineJson','currentKnots','live','marineBatch','weatherBatch','fallbackSamples','fetchWindSamples','fetchTempSamples','fetchSeaLevelSamples','fetchWaveSamples','refreshConditionStrip','uvFrom','vdFrom','componentFrom','parseCurrentFeature','score','scoreDetailed','angleDiff','inPoly','featureContainsPoint','pointInProtection','compass','exposure','editCustom'];
 function setup(){
   const now=Date.parse('2026-09-15T12:00:00Z');
   const points=Array.from({length:151},(_,i)=>({lat:57+i/1000,lon:18}));
-  const context={Date,console:{warn(){}},URL,Map,timelineIndex:24,timelineHours:Array.from({length:49},(_,i)=>new Date(now+(i-24)*3600000)),currentSourcePoints:()=>points, fallbackProbePoints:()=>points.slice(0,3),viewCacheKey:()=> 'test',windCache:new Map(),tempCache:new Map(),levelCache:new Map(),waveCache:new Map()};
+  const context={requestVersions:{},weatherGeneration:0,Date,console:{warn(){}},URL,Map,timelineIndex:24,timelineHours:Array.from({length:49},(_,i)=>new Date(now+(i-24)*3600000)),currentSourcePoints:()=>points, fallbackProbePoints:()=>points.slice(0,3),viewCacheKey:()=> 'test',windCache:new Map(),tempCache:new Map(),levelCache:new Map(),waveCache:new Map()};
   vm.createContext(context);
   for(const name of names){const line=source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')||l.startsWith('async function '+name+'('));assert.ok(line,name);vm.runInContext(line,context)}
   vm.runInContext(source.slice(source.indexOf('async function openSpot('),source.indexOf('\nfunction renderSpots(')),context);
