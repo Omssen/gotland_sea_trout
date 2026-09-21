@@ -10,9 +10,10 @@ function setup(){
   const c={rankingCurrentInFlight:new Map(),console:{warn(){}},Date,Map,Set,URL,requestVersions:{},weatherGeneration:0,timelineHours:[new Date('2026-09-15T12:00Z'),new Date('2026-09-15T13:00Z')],timelineIndex:0,active:{},document:{querySelector:element},$:element,status:s=>statuses.push(s),setTimeout:()=>1,clearTimeout(){},updateTimeline(){},updateLandCover(){},renderLegends(){},cancelModes(){},applySpotVisibility(){},satCenters:()=>[],favs:new Set(),customSpots:[],coastSegments:[],coastMaskPolys:[],coastMaskPromise:null,stitchCoastWays:()=>[],validLandRing:()=>true,live:async()=>({w:{current:{}},m:{current:{}}}),score:()=>50,compass:()=> 'N',exposure:()=> 'auflandig',currentKnots:()=>0,roundedCurrentTime:()=>new Date('2026-09-15T12:00Z')};
   c.map={layers:new Set(),setView(){},getCenter:()=>({lat:57,lng:18}),hasLayer(l){return this.layers.has(l)},removeLayer(l){this.layers.delete(l)},on(name,fn){callbacks[name]=fn}};
   for(const name of ['spotLayer','customLayer','homeLayer','protectedLayer','parkingLayer','bathy','windLayer','currentLayer','tempLayer','turbidityLayer','seaLevelLayer','waveLayer','shore50Layer'])c[name]={drawn:null,clearLayers(){this.drawn=null},addTo(map){map.layers.add(this)}};
-  c.officialCurrentWmtsLayer=()=>({addTo(){}});c.drawScalarBands=(samples,layer)=>{layer.drawn=samples[0].value};c.drawStaticVectors=()=>{};
+  c.officialCurrentWmtsLayer=()=>({addTo(){}});c.drawScalarBands=(samples,layer)=>{layer.drawn=samples[0].value};c.drawStaticVectors=(samples,layer)=>{layer.drawn=samples[0].value};
   for(const name of ['currentColor','windColor','tempColor','levelColor','waveColor'])c[name]=()=>'';
   vm.createContext(c);
+  vm.runInContext(source.split(/\r?\n/).find(l=>l.startsWith('const CURRENT_SOLID_STYLE=')),c);
   for(const name of ['readStored','storedPoint','requestGuard','invalidateRequest','timelineTime','hourlyIndex','rankingHour','openSheet','closeSheet','snapOneSpot','loadCoastMask','loadParkingNear','loadVectors','loadTemp','loadSeaLevel','loadWave','refreshConditionStrip','setLayer','today','fetchWindSamples','fetchTempSamples','fetchSeaLevelSamples','fetchWaveSamples','fetchCurrentSamples','uvFrom']){
     const line=source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')||l.startsWith('async function '+name+'('));if(line)vm.runInContext(line,c);
   }
@@ -283,4 +284,40 @@ test('future timeline: slider, stepping, playback, CMEMS and separate satellite 
  c.WMTS_ROOT='https://example.test/';c.CURRENT_LAYER='test';c.CURRENT_WMTS_STYLE='test';let url;c.L={tileLayer:u=>{url=u}};c.officialCurrentWmtsLayer();assert.equal(new URL(url).searchParams.get('time'),'2026-09-21T19:00:00Z');
  c.active.turbidity=true;c.updateTimeline();assert.equal(element('#timeRange').max,20);element('#timeRange').oninput({target:{value:'20'}});assert.equal(c.turbidityIndex,20);assert.equal(c.timelineIndex,72);assert.deepEqual(Array.from(c.turbidityDates),dates);
  c.active.turbidity=false;c.updateTimeline();assert.equal(element('#timeRange').max,72);assert.equal(element('#timeRange').value,72);
+});
+
+function currentRenderSetup(){
+ const h=setup(),{c}=h,tiles=[],bands=[],arrows=[],pending=deferred();
+ c.currentLayer.items=[];c.currentLayer.clearLayers=function(){this.items=[]};
+ c.L={tileLayer:(url,options)=>({url,options,addTo(layer){layer.items.push(this);tiles.push(this);return this}})};
+ for(const prefix of ['const CURRENT_LAYER=','const WMTS_ROOT=','const CURRENT_WMTS_STYLE='])vm.runInContext(source.split(/\r?\n/).find(l=>l.startsWith(prefix)),c);
+ for(const name of ['officialCurrentWmtsLayer','copernicusTime','currentContext','idwVector','vdFrom'])vm.runInContext(source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')),c);
+ c.fetchCurrentSamples=()=>pending.promise;c.drawScalarBands=(...args)=>bands.push(args);c.drawStaticVectors=(...args)=>arrows.push(args);
+ return {...h,tiles,bands,arrows,pending};
+}
+test('current rendering retains official solid WMTS and numeric vectors/context without numeric color bands',async()=>{
+ const h=currentRenderSetup(),{c}=h,samples=[{lat:57,lon:18,u:.3,n:.4,v:.5,dir:36.86989764584402}];const before=JSON.stringify(samples),run=c.loadVectors('current');
+ assert.equal(c.currentLayer.items.length,1);assert.match(new URL(h.tiles[0].url).searchParams.get('STYLE'),/solidAndVector/);
+ h.pending.resolve(samples);await run;
+ assert.equal(h.bands.length,0);assert.equal(c.currentLayer.items.length,1);const q=new URL(c.currentLayer.items[0].url).searchParams;
+ assert.equal(q.get('request'),'GetTile');assert.equal(q.get('STYLE'),'vectorStyle:solid,cmap:viridis,range=0/0.7');assert.equal(q.get('time'),'2026-09-15T12:00:00Z');assert.equal(q.get('layer'),new URL(h.tiles[0].url).searchParams.get('layer'));
+ assert.equal(h.arrows.length,1);assert.strictEqual(h.arrows[0][0],samples);assert.equal(JSON.stringify(samples),before);assert.equal(c.currentContext({lat:57,lon:18},samples).v,.5);assert.match(h.statuses.at(-1),/1 numerische CMEMS-Punkte/);
+});
+test('current rendering failure retains original WMTS fallback without numeric bands or arrows',async()=>{
+ const h=currentRenderSetup(),run=h.c.loadVectors('current'),tile=h.c.currentLayer.items[0];h.pending.reject(Error('missing'));await run;
+ assert.strictEqual(h.c.currentLayer.items[0],tile);assert.equal(h.c.currentLayer.items.length,1);assert.equal(h.bands.length,0);assert.equal(h.arrows.length,0);assert.match(h.statuses.at(-1),/WMTS-Fallback/);
+});
+test('temperature and wind retain their existing numeric scalar rendering',async()=>{
+ const h=currentRenderSetup(),samples=[{value:12,v:12}];h.c.fetchTempSamples=async()=>samples;h.c.fetchWindSamples=async()=>samples;
+ await h.c.loadTemp();await h.c.loadVectors('wind');assert.equal(h.bands.length,2);assert.strictEqual(h.bands[0][0],samples);assert.strictEqual(h.bands[0][1],h.c.tempLayer);assert.equal(h.bands[0][3],false);assert.equal(h.bands[1][4],'wind');assert.equal(h.tiles.length,0);
+});
+
+test('current legend follows the visible official WMTS style through loading, success and fallback',async()=>{
+ for(const fail of [false,true]){
+ const h=currentRenderSetup(),{c}=h;c.currentLayer.getLayers=()=>c.currentLayer.items;c.syncQuickLayers=()=>{};
+ for(const name of ['wmtsLegendUrl','currentLegendUrl'])vm.runInContext(source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')),c);
+ vm.runInContext(source.slice(source.indexOf('function renderLegends(){'),source.indexOf('function syncQuickLayers(){')),c);
+ const check=()=>{const html=h.element('#mapLegends').innerHTML,src=html.match(/src="([^"]+)"/)[1],q=new URL(src).searchParams,tile=new URL(c.currentLayer.items[0].url).searchParams;assert.equal(q.get('request'),'GetLegend');assert.equal(q.get('STYLE'),tile.get('STYLE'));assert.equal(q.get('layer'),tile.get('layer'));assert.ok(html.includes('m/s'));assert.doesNotMatch(html,/currentScaleBar|currentScaleTicks|0,7\+/)};
+ const run=c.loadVectors('current');check();if(fail)h.pending.reject(Error('missing'));else h.pending.resolve([{u:.3,n:.4,v:.5,lat:57,lon:18,dir:37}]);await run;check();
+ }
 });
