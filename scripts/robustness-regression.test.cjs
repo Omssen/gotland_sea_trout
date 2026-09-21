@@ -225,12 +225,12 @@ test('ranking time: delayed old hourly responses cannot overwrite the new timeli
  const h=rankingTimeSetup(),gate=deferred(),fetch=h.c.fetch;let calls=0;h.c.fetch=async url=>{if(calls++<2)await gate.promise;return fetch(url)};const old=h.c.today();await new Promise(setImmediate);h.c.timelineIndex=1;h.c.refreshTimed();await h.c.today(true);const latest=h.element('#ranking').innerHTML;assert.ok(h.inputs.every(x=>x.w.wind_speed_10m===35));gate.resolve();await old;assert.equal(h.element('#ranking').innerHTML,latest);assert.equal(h.inputs.length,25);
 });
 
-test('ranking time: minus 24 hours, today and plus 24 hours use exact hours within the requested UTC window',async()=>{
- const now=Date.parse('2026-09-16T11:00:00Z'),times=Array.from({length:49},(_,i)=>now+(i-24)*3600000),h=rankingTimeSetup(times);
+test('ranking time: current hour through plus 72 hours use exact hours within the requested UTC window',async()=>{
+ const initial=timelineSetup('2026-09-16T11:37:00Z'),times=Array.from(initial.c.timelineHours,Number),h=rankingTimeSetup(times);
  h.weather.hourly={time:times.map(t=>t/1000),wind_speed_10m:times.map((_,i)=>i+1),wind_direction_10m:times.map(()=>90)};
- h.marine.hourly={time:times.slice().reverse().map(t=>t/1000),wave_height:times.map((_,i)=>(49-i)/10),sea_surface_temperature:times.map(()=>10),ocean_current_velocity:times.map(()=>.2),ocean_current_direction:times.map(()=>90)};
- for(const index of [0,24,48]){h.c.timelineIndex=index;h.c.refreshTimed();const before=h.inputs.length,points=h.currentTimes.length;await h.run();assert.ok(h.inputs.slice(before).every(x=>x.w.wind_speed_10m===index+1&&x.m.wave_height===(index+1)/10));assert.ok(h.currentTimes.slice(points).every(t=>Date.parse(t)===times[index]))}
- for(const url of h.requests){assert.equal(url.searchParams.get('start_hour'),'2026-09-15T11:00');assert.equal(url.searchParams.get('end_hour'),'2026-09-17T11:00')}
+ h.marine.hourly={time:times.slice().reverse().map(t=>t/1000),wave_height:times.map((_,i)=>(73-i)/10),sea_surface_temperature:times.map(()=>10),ocean_current_velocity:times.map(()=>.2),ocean_current_direction:times.map(()=>90)};
+ for(const index of [0,24,48,72]){h.c.timelineIndex=index;h.c.refreshTimed();const before=h.inputs.length,points=h.currentTimes.length;await h.run();assert.ok(h.inputs.slice(before).every(x=>x.w.wind_speed_10m===index+1&&x.m.wave_height===(index+1)/10));assert.ok(h.currentTimes.slice(points).every(t=>Date.parse(t)===times[index]))}
+ for(const url of h.requests){assert.equal(url.searchParams.get('start_hour'),'2026-09-16T11:00');assert.equal(url.searchParams.get('end_hour'),'2026-09-19T11:00')}
 });
 
 
@@ -252,4 +252,35 @@ test('ranking early coverage: complete coverage is used for every scored spot',a
 test('ranking early coverage: map path still attempts every point after failure',async()=>{
  const h=rankingSpatialSetup(),fetch=h.c.fetchCurrentPoint,points=h.c.currentNumericPoints();let starts=0;h.c.fetchCurrentPoint=(p,t)=>starts++===0?Promise.reject(Error('missing')):fetch(p,t);
  const samples=await h.c.fetchCurrentSamples(false);assert.equal(starts,points.length);assert.equal(samples.length,points.length-1);assert.equal(h.c.currentNumericCache.size,1);
+});
+
+
+function timelineSetup(iso){
+ const h=setup(),{c,element}=h,RealDate=Date;
+ c.Date=class extends RealDate{constructor(...args){super(...(args.length?args:[iso]))}static now(){return RealDate.parse(iso)}};
+ c.window={};c.document.body={classList:{toggle(){}}};
+ for(const id of ['#timeRange','#timeline','#playTime','#nextTime','#conditionStrip']){element(id).addEventListener=()=>{};element(id).classList.toggle=()=>{}}
+ c.refreshConditionStrip=()=>{};c.refreshTimed=()=>{};c.loadTurbidity=()=>{};
+ let tick;c.setInterval=fn=>{tick=fn;return 1};c.clearInterval=()=>{tick=null};h.tick=()=>tick?.();
+ for(const name of ['initTimeline','stepTimeline','updateTimeline','initTurbidityDates','turbidityDate','stepTurbidity','hourlyQuery','roundedCurrentTime','copernicusTime','officialCurrentWmtsLayer'])vm.runInContext(source.split(/\r?\n/).find(l=>l.startsWith('function '+name+'(')),c);
+ c.initTimeline();return h;
+}
+test('future timeline: real initialization is absolute and DST-safe across calendar boundaries',()=>{
+ const old=process.env.TZ;try{for(const zone of ['Europe/Berlin','UTC']){process.env.TZ=zone;for(const iso of ['2026-10-25T01:30:00Z','2026-03-29T00:30:00Z','2026-03-29T01:30:00Z','2026-09-18T23:59:59Z','2026-01-31T23:30:00Z','2026-12-31T23:30:00Z']){
+ const {c,element}=timelineSetup(iso),start=Math.floor(Date.parse(iso)/3600000)*3600000;
+ assert.equal(+c.timelineHours[0],start,zone+' '+iso);assert.equal(c.timelineHours.length,73);assert.equal(+c.timelineHours[72],start+72*3600000);assert.equal(c.timelineIndex,0);
+ for(let i=0;i<73;i++){assert.ok(+c.timelineHours[i]>=start);if(i)assert.equal(c.timelineHours[i]-c.timelineHours[i-1],3600000)}
+ assert.equal(element('#timeRange').max,72);assert.equal(element('#timeRange').value,0);
+ const q=new URLSearchParams(c.hourlyQuery());assert.equal(q.get('start_hour'),new Date(start).toISOString().slice(0,16));assert.equal(q.get('end_hour'),new Date(start+72*3600000).toISOString().slice(0,16));
+ c.timelineHours=[];const fallback=new URLSearchParams(c.hourlyQuery());assert.equal(fallback.get('start_hour'),q.get('start_hour'));assert.equal(fallback.get('end_hour'),q.get('end_hour'));
+ }}}finally{if(old===undefined)delete process.env.TZ;else process.env.TZ=old}
+});
+test('future timeline: slider, stepping, playback, CMEMS and separate satellite axis preserve their bounds',()=>{
+ const h=timelineSetup('2026-09-18T19:35:00Z'),{c,element}=h;const dates=Array.from(c.turbidityDates);assert.equal(dates.length,21);assert.equal(c.turbidityIndex,18);
+ c.stepTimeline(-1);assert.equal(c.timelineIndex,0);element('#timeRange').oninput({target:{value:'71'}});assert.equal(c.timelineIndex,71);
+ element('#playTime').onclick();h.tick();assert.equal(c.timelineIndex,72);h.tick();assert.equal(element('#playTime').textContent,'▶');c.stepTimeline(1);assert.equal(c.timelineIndex,72);
+ c.active.current=true;c.updateTimeline();assert.equal(element('#timeRange').max,72);assert.equal(element('#timeRange').value,72);
+ c.WMTS_ROOT='https://example.test/';c.CURRENT_LAYER='test';c.CURRENT_WMTS_STYLE='test';let url;c.L={tileLayer:u=>{url=u}};c.officialCurrentWmtsLayer();assert.equal(new URL(url).searchParams.get('time'),'2026-09-21T19:00:00Z');
+ c.active.turbidity=true;c.updateTimeline();assert.equal(element('#timeRange').max,20);element('#timeRange').oninput({target:{value:'20'}});assert.equal(c.turbidityIndex,20);assert.equal(c.timelineIndex,72);assert.deepEqual(Array.from(c.turbidityDates),dates);
+ c.active.turbidity=false;c.updateTimeline();assert.equal(element('#timeRange').max,72);assert.equal(element('#timeRange').value,72);
 });
